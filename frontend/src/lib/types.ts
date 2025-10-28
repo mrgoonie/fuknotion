@@ -22,7 +22,8 @@ export interface Member {
   id: string
   workspaceId: string
   email: string
-  role: "owner" | "editor" | "viewer"
+  name?: string
+  role: "owner" | "admin" | "editor" | "viewer"
   createdAt: string
 }
 
