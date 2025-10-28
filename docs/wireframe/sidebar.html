@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuknotion - Sidebar Wireframe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: hsl(0, 0%, 98%);
+      --surface: hsl(0, 0%, 100%);
+      --foreground: hsl(0, 0%, 12%);
+      --foreground-muted: hsl(0, 0%, 38%);
+      --foreground-subtle: hsl(0, 0%, 62%);
+      --border: hsl(0, 0%, 89%);
+      --border-subtle: hsl(0, 0%, 94%);
+      --accent: hsl(199, 89%, 48%);
+      --accent-hover: hsl(199, 89%, 42%);
+      --accent-subtle: hsl(199, 89%, 96%);
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --duration-fast: 100ms;
+      --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark {
+      --background: hsl(0, 0%, 10%);
+      --surface: hsl(0, 0%, 14%);
+      --foreground: hsl(0, 0%, 89%);
+      --foreground-muted: hsl(0, 0%, 62%);
+      --foreground-subtle: hsl(0, 0%, 46%);
+      --border: hsl(0, 0%, 20%);
+      --border-subtle: hsl(0, 0%, 16%);
+      --accent: hsl(199, 80%, 52%);
+      --accent-subtle: hsl(199, 50%, 20%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      padding: 2rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wireframe-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--foreground-muted);
+      margin-bottom: 2rem;
+    }
+
+    .sidebar-demo {
+      display: grid;
+      grid-template-columns: 224px 1fr;
+      gap: 2rem;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+
+    .sidebar__header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar__logo {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .sidebar__logo svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    .icon-button {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: none;
+      border: none;
+      color: var(--foreground-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-standard);
+    }
+
+    .icon-button:hover {
+      background: var(--accent-subtle);
+      color: var(--accent);
+    }
+
+    .icon-button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .sidebar__search {
+      padding: var(--space-2) var(--space-4);
+    }
+
+    .search-input {
+      width: 100%;
+      height: 32px;
+      padding: 0 var(--space-3);
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--foreground);
+      outline: none;
+      transition: all var(--duration-fast);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-subtle);
+    }
+
+    .sidebar__actions {
+      padding: var(--space-2) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .sidebar-button {
+      height: 32px;
+      padding: 0 var(--space-3);
+      background: none;
+      border: none;
+      border-radius: 6px;
+      color: var(--foreground-muted);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+
+    .sidebar-button:hover {
+      background: var(--accent-subtle);
+      color: var(--accent);
+    }
+
+    .sidebar-button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .separator {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: var(--space-2) var(--space-4);
+    }
+
+    .sidebar__section {
+      padding: var(--space-2) var(--space-4);
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--foreground-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-list {
+      list-style: none;
+    }
+
+    .page-item {
+      min-height: 32px;
+      padding: 0 var(--space-2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      position: relative;
+      user-select: none;
+    }
+
+    .page-item:hover {
+      background: var(--accent-subtle);
+    }
+
+    .page-item:hover .page-actions {
+      opacity: 1;
+    }
+
+    .page-item.active {
+      background: var(--accent-subtle);
+      border-left: 3px solid var(--accent);
+      padding-left: calc(var(--space-2) - 3px);
+    }
+
+    .page-item.dragging {
+      opacity: 0.5;
+    }
+
+    .page-item .expand-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--foreground-subtle);
+      flex-shrink: 0;
+      transition: transform var(--duration-fast);
+      cursor: pointer;
+    }
+
+    .page-item.expanded .expand-icon {
+      transform: rotate(90deg);
+    }
+
+    .page-item .drag-handle {
+      width: 16px;
+      height: 16px;
+      color: var(--foreground-subtle);
+      flex-shrink: 0;
+      cursor: grab;
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+
+    .page-item:hover .drag-handle {
+      opacity: 1;
+    }
+
+    .page-item .page-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--foreground-muted);
+      flex-shrink: 0;
+    }
+
+    .page-title {
+      font-size: 14px;
+      color: var(--foreground);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-actions {
+      display: flex;
+      gap: var(--space-1);
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+
+    .page-action-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: none;
+      border: none;
+      color: var(--foreground-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast);
+    }
+
+    .page-action-btn:hover {
+      background: var(--background);
+      color: var(--accent);
+    }
+
+    .page-action-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .nested-pages {
+      margin-left: var(--space-4);
+      display: none;
+    }
+
+    .page-item.expanded + .nested-pages {
+      display: block;
+    }
+
+    .sidebar__footer {
+      padding: var(--space-4);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .annotations {
+      padding: 2rem;
+      background: var(--background);
+    }
+
+    .annotation-list {
+      list-style: none;
+    }
+
+    .annotation-item {
+      padding: var(--space-3);
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      margin-bottom: var(--space-3);
+    }
+
+    .annotation-item h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+
+    .annotation-item p {
+      font-size: 14px;
+      color: var(--foreground-muted);
+      line-height: 1.5;
+    }
+
+    code {
+      padding: 2px 6px;
+      background: var(--accent-subtle);
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Monaco', monospace;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast);
+    }
+
+    .theme-toggle:hover {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+
+  <div class="wireframe-container">
+    <h1>Sidebar Component</h1>
+    <p class="subtitle">Interactive navigation with drag-drop, expand/collapse, and nested pages</p>
+
+    <div class="sidebar-demo">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar__header">
+          <div class="sidebar__logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>Fuknotion</span>
+          </div>
+          <button class="icon-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="sidebar__search">
+          <input type="text" class="search-input" placeholder="Search... (⌘K)" />
+        </div>
+
+        <div class="sidebar__actions">
+          <button class="sidebar-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>New Page</span>
+          </button>
+          <button class="sidebar-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>Templates</span>
+          </button>
+          <button class="sidebar-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Import</span>
+          </button>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="sidebar__section">
+          <div class="section-title">
+            <span>Favorites</span>
+            <button class="icon-button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+          <ul class="page-list">
+            <li class="page-item active">
+              <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="8" x2="4" y2="8.01"/>
+                <line x1="4" y1="16" x2="4" y2="16.01"/>
+                <line x1="12" y1="8" x2="12" y2="8.01"/>
+                <line x1="12" y1="16" x2="12" y2="16.01"/>
+                <line x1="20" y1="8" x2="20" y2="8.01"/>
+                <line x1="20" y1="16" x2="20" y2="16.01"/>
+              </svg>
+              <svg class="page-icon" fill="currentColor" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <span class="page-title">Getting Started</span>
+              <div class="page-actions">
+                <button class="page-action-btn" title="More options">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                    <circle cx="5" cy="12" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+            <li class="page-item">
+              <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="8" x2="4" y2="8.01"/>
+                <line x1="4" y1="16" x2="4" y2="16.01"/>
+                <line x1="12" y1="8" x2="12" y2="8.01"/>
+                <line x1="12" y1="16" x2="12" y2="16.01"/>
+                <line x1="20" y1="8" x2="20" y2="8.01"/>
+                <line x1="20" y1="16" x2="20" y2="16.01"/>
+              </svg>
+              <svg class="page-icon" fill="currentColor" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <span class="page-title">Project Ideas</span>
+              <div class="page-actions">
+                <button class="page-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                    <circle cx="5" cy="12" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="sidebar__section" style="flex: 1;">
+          <div class="section-title">
+            <span>Workspace</span>
+          </div>
+          <ul class="page-list">
+            <li class="page-item expanded" onclick="toggleExpand(this)">
+              <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="8" x2="4" y2="8.01"/>
+                <line x1="4" y1="16" x2="4" y2="16.01"/>
+                <line x1="12" y1="8" x2="12" y2="8.01"/>
+                <line x1="12" y1="16" x2="12" y2="16.01"/>
+                <line x1="20" y1="8" x2="20" y2="8.01"/>
+                <line x1="20" y1="16" x2="20" y2="16.01"/>
+              </svg>
+              <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="page-title">Personal</span>
+              <div class="page-actions">
+                <button class="page-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+                <button class="page-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                    <circle cx="5" cy="12" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+            <ul class="nested-pages">
+              <li class="page-item">
+                <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="8" x2="4" y2="8.01"/>
+                  <line x1="4" y1="16" x2="4" y2="16.01"/>
+                  <line x1="12" y1="8" x2="12" y2="8.01"/>
+                  <line x1="12" y1="16" x2="12" y2="16.01"/>
+                  <line x1="20" y1="8" x2="20" y2="8.01"/>
+                  <line x1="20" y1="16" x2="20" y2="16.01"/>
+                </svg>
+                <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="page-title">Daily Journal</span>
+              </li>
+              <li class="page-item">
+                <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="8" x2="4" y2="8.01"/>
+                  <line x1="4" y1="16" x2="4" y2="16.01"/>
+                  <line x1="12" y1="8" x2="12" y2="8.01"/>
+                  <line x1="12" y1="16" x2="12" y2="16.01"/>
+                  <line x1="20" y1="8" x2="20" y2="8.01"/>
+                  <line x1="20" y1="16" x2="20" y2="16.01"/>
+                </svg>
+                <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="page-title">Book Notes</span>
+              </li>
+            </ul>
+
+            <li class="page-item" onclick="toggleExpand(this)">
+              <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="8" x2="4" y2="8.01"/>
+                <line x1="4" y1="16" x2="4" y2="16.01"/>
+                <line x1="12" y1="8" x2="12" y2="8.01"/>
+                <line x1="12" y1="16" x2="12" y2="16.01"/>
+                <line x1="20" y1="8" x2="20" y2="8.01"/>
+                <line x1="20" y1="16" x2="20" y2="16.01"/>
+              </svg>
+              <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="page-title">Work Projects</span>
+              <div class="page-actions">
+                <button class="page-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+                <button class="page-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                    <circle cx="5" cy="12" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+            <ul class="nested-pages">
+              <li class="page-item">
+                <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="8" x2="4" y2="8.01"/>
+                  <line x1="4" y1="16" x2="4" y2="16.01"/>
+                  <line x1="12" y1="8" x2="12" y2="8.01"/>
+                  <line x1="12" y1="16" x2="12" y2="16.01"/>
+                  <line x1="20" y1="8" x2="20" y2="8.01"/>
+                  <line x1="20" y1="16" x2="20" y2="16.01"/>
+                </svg>
+                <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="page-title">Q1 Planning</span>
+              </li>
+              <li class="page-item">
+                <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="8" x2="4" y2="8.01"/>
+                  <line x1="4" y1="16" x2="4" y2="16.01"/>
+                  <line x1="12" y1="8" x2="12" y2="8.01"/>
+                  <line x1="12" y1="16" x2="12" y2="16.01"/>
+                  <line x1="20" y1="8" x2="20" y2="8.01"/>
+                  <line x1="20" y1="16" x2="20" y2="16.01"/>
+                </svg>
+                <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="page-title">Team Meetings</span>
+              </li>
+            </ul>
+
+            <li class="page-item">
+              <svg class="drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="8" x2="4" y2="8.01"/>
+                <line x1="4" y1="16" x2="4" y2="16.01"/>
+                <line x1="12" y1="8" x2="12" y2="8.01"/>
+                <line x1="12" y1="16" x2="12" y2="16.01"/>
+                <line x1="20" y1="8" x2="20" y2="8.01"/>
+                <line x1="20" y1="16" x2="20" y2="16.01"/>
+              </svg>
+              <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span class="page-title">Reading List</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar__footer">
+          <button class="icon-button" title="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+          <button class="icon-button" title="Trash">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+          <button class="icon-button" title="Toggle theme" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Annotations -->
+      <div class="annotations">
+        <h2 style="font-size: 18px; margin-bottom: 1rem;">Sidebar Annotations</h2>
+        <ul class="annotation-list">
+          <li class="annotation-item">
+            <h3>Width: 224px → 48px (collapsed)</h3>
+            <p>Standard expanded width allows comfortable reading. Collapses to icon-only view via toggle button.</p>
+          </li>
+          <li class="annotation-item">
+            <h3>Drag Handles</h3>
+            <p>Appear on hover (6-dot icon). Allow drag-drop reordering of pages within sections and across folders.</p>
+          </li>
+          <li class="annotation-item">
+            <h3>Expand/Collapse</h3>
+            <p>Chevron icon rotates 90° when expanded. Click anywhere on folder row to toggle. Nested pages show with left indent.</p>
+          </li>
+          <li class="annotation-item">
+            <h3>Action Buttons</h3>
+            <p>Fade in on hover: <code>+</code> (add sub-page), <code>•••</code> (more options: rename, delete, duplicate, move).</p>
+          </li>
+          <li class="annotation-item">
+            <h3>Active State</h3>
+            <p>3px left accent border + background highlight. Follows currently open page.</p>
+          </li>
+          <li class="annotation-item">
+            <h3>Keyboard Navigation</h3>
+            <p>↑↓ navigate pages, → expands folder, ← collapses, Enter opens page, Backspace goes to parent.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+
+    function toggleExpand(element) {
+      if (event.target.classList.contains('page-action-btn') ||
+          event.target.closest('.page-action-btn') ||
+          event.target.classList.contains('drag-handle')) {
+        return;
+      }
+      element.classList.toggle('expanded');
+    }
+
+    // Active state on click
+    document.querySelectorAll('.page-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.page-action-btn') && !e.target.closest('.expand-icon')) {
+          document.querySelectorAll('.page-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
