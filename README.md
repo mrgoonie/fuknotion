@@ -125,22 +125,45 @@ go build -o fuknotion .
 
 ## 📊 Current Status
 
-**Phase 0 Complete** ✅
+**Phase 1 Complete** ✅
 - [x] Project initialization (Wails v2 with React TypeScript)
 - [x] Go backend structure (database, models)
 - [x] SQLite database with migrations (workspaces, notes, members, sync)
 - [x] Note CRUD operations (create, read, update, delete, favorite)
 - [x] Workspace management
-- [x] Frontend dependencies (BlockNote, TailwindCSS, shadcn/ui, etc.)
+- [x] Wails bindings integration (9 methods exposed to frontend)
+- [x] Frontend dependencies (BlockNote 0.41.1, TailwindCSS, Zustand, etc.)
 - [x] TailwindCSS + design system variables
 - [x] Vite config for Wails HMR
+- [x] **Core UI Components**
+  - [x] TitleBar (custom window chrome with traffic lights)
+  - [x] Sidebar (collapsible navigation with workspace/note tree)
+  - [x] TabBar (multi-tab interface with drag-to-reorder)
+  - [x] Editor (BlockNote integration with auto-save)
+  - [x] MainLayout (responsive app structure)
+  - [x] ErrorBoundary (error handling with fallback UI)
+- [x] **State Management** (Zustand)
+  - [x] noteStore (CRUD, current note, dirty state, auto-save)
+  - [x] workspaceStore (workspace management, members)
+  - [x] uiStore (theme, sidebar, tabs - persisted to localStorage)
+- [x] **Go Tests** - 7 tests covering all database operations (all passing)
+- [x] **Critical Fixes**
+  - [x] Zustand middleware import compatibility
+  - [x] CSS theme variables (--surface)
+  - [x] Editor title auto-save implementation
+
+**Known Issues**
+- ⚠️ **Production Build Blocked**: vfile package uses Node.js subpath imports (#minpath) not resolved by Vite/Rollup
+  - Workaround: Use `wails dev` for development mode
+  - Issue tracked in BlockNote dependencies (vfile used by mdast/remark)
+  - Does not affect development mode functionality
 
 **Next Steps**
-- [ ] Phase 1: Basic UI (sidebar, editor integration, tabs)
-- [ ] Phase 2: Editor features (slash commands, drag-drop, internal links)
+- [ ] Phase 2: Advanced editor features (slash commands, drag-drop blocks, internal links)
 - [ ] Phase 3: Google Drive sync & OAuth
 - [ ] Phase 4: Multi-tenant & member management
 - [ ] Phase 5: Polish (themes, search, accessibility)
+- [ ] Fix vfile build issue (investigate Vite config or alternative markdown processor)
 
 ## 📚 Documentation
 
