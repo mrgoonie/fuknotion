@@ -125,7 +125,7 @@ go build -o fuknotion .
 
 ## 📊 Current Status
 
-**Phase 1 Complete** ✅
+**Phases 1-3 Complete** ✅
 - [x] Project initialization (Wails v2 with React TypeScript)
 - [x] Go backend structure (database, models)
 - [x] SQLite database with migrations (workspaces, notes, members, sync)
@@ -151,6 +151,21 @@ go build -o fuknotion .
   - [x] Zustand middleware import compatibility
   - [x] CSS theme variables (--surface)
   - [x] Editor title auto-save implementation
+- [x] **Phase 2: Advanced Editor Features**
+  - [x] Custom BlockNote schema with inline content types
+  - [x] Page links with # trigger (internal navigation)
+  - [x] Member mentions with @ trigger (collaboration)
+  - [x] Suggestion menus for links and mentions
+  - [x] Slash command menu for block types
+- [x] **Phase 3: Google Drive Sync**
+  - [x] OAuth 2.0 authentication flow
+  - [x] Google Drive API integration (upload, download, list)
+  - [x] Sync queue with background processor (5s interval)
+  - [x] Three-way merge conflict resolution
+  - [x] Four conflict strategies (local_wins, remote_wins, newer_wins, three_way_merge)
+  - [x] Token persistence and auto-load
+  - [x] 5 sync methods exposed to frontend
+  - [x] Offline-first architecture with retry logic
 
 **Known Issues**
 - ⚠️ **Production Build Blocked**: vfile package uses Node.js subpath imports (#minpath) not resolved by Vite/Rollup
@@ -158,11 +173,28 @@ go build -o fuknotion .
   - Issue tracked in BlockNote dependencies (vfile used by mdast/remark)
   - Does not affect development mode functionality
 
+**Environment Setup for Google Drive Sync**
+```bash
+# Set up Google OAuth credentials
+export GOOGLE_CLIENT_ID="your-client-id"
+export GOOGLE_CLIENT_SECRET="your-client-secret"
+
+# Or create .env file in project root:
+# GOOGLE_CLIENT_ID=your-client-id
+# GOOGLE_CLIENT_SECRET=your-client-secret
+```
+
 **Next Steps**
-- [ ] Phase 2: Advanced editor features (slash commands, drag-drop blocks, internal links)
-- [ ] Phase 3: Google Drive sync & OAuth
-- [ ] Phase 4: Multi-tenant & member management
-- [ ] Phase 5: Polish (themes, search, accessibility)
+- [ ] Phase 4: Polish & testing
+  - [ ] Full-text search (Ctrl/Cmd + K)
+  - [ ] Keyboard shortcuts
+  - [ ] Accessibility improvements (WCAG AA)
+  - [ ] Performance optimization
+  - [ ] Cross-platform testing (Windows/macOS)
+- [ ] Phase 5: Advanced features
+  - [ ] AI assistant integration
+  - [ ] Real-time collaboration
+  - [ ] Mobile companion app
 - [ ] Fix vfile build issue (investigate Vite config or alternative markdown processor)
 
 ## 📚 Documentation
