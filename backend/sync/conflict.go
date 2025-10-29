@@ -3,7 +3,6 @@ package sync
 import (
 	"fmt"
 	"fuknotion/backend/models"
-	"time"
 )
 
 // ConflictResolutionStrategy defines how conflicts are resolved
@@ -54,17 +53,7 @@ func (cr *ConflictResolver) Resolve(local *models.Note, remote *models.Note, bas
 
 // resolveNewerWins returns the note with the most recent update
 func (cr *ConflictResolver) resolveNewerWins(local *models.Note, remote *models.Note) (*models.Note, error) {
-	localTime, err := time.Parse(time.RFC3339, local.UpdatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse local time: %w", err)
-	}
-
-	remoteTime, err := time.Parse(time.RFC3339, remote.UpdatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse remote time: %w", err)
-	}
-
-	if localTime.After(remoteTime) {
+	if local.UpdatedAt.After(remote.UpdatedAt) {
 		return local, nil
 	}
 

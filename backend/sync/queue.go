@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"fuknotion/backend/database"
-	"fuknotion/backend/models"
-	"sync"
+	stdSync "sync"
 	"time"
 )
 
@@ -34,7 +33,7 @@ type SyncQueue struct {
 	db         *database.DB
 	drive      *DriveSync
 	queue      []*SyncQueueItem
-	mu         sync.RWMutex
+	mu         stdSync.RWMutex
 	processing bool
 	stopChan   chan struct{}
 }

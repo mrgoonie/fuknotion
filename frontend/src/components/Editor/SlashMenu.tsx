@@ -1,11 +1,10 @@
-import { DefaultReactSuggestionItem } from '@blocknote/react'
-
-export interface SlashMenuItem extends DefaultReactSuggestionItem {
+export interface SlashMenuItem {
   title: string
   onItemClick: () => void
   icon?: React.ReactNode
-  category?: string
-  keywords?: string[]
+  subtext?: string
+  aliases?: string[]
+  group?: string
 }
 
 export const getSlashMenuItems = (editor: any): SlashMenuItem[] => [
