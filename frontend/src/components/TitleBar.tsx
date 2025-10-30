@@ -1,8 +1,13 @@
 import { Moon, Sun, Monitor, Minus, Square, X } from 'lucide-react'
 import { useUIStore } from '../stores/uiStore'
+import { SyncStatusBadge } from './SyncStatusBadge'
 import { cn } from '../lib/utils'
 
-export function TitleBar() {
+interface TitleBarProps {
+  onSettingsClick?: () => void
+}
+
+export function TitleBar({ onSettingsClick }: TitleBarProps) {
   const { theme, setTheme } = useUIStore()
 
   const handleMinimize = () => {
@@ -43,8 +48,13 @@ export function TitleBar() {
       {/* Center: Empty (for future features) */}
       <div className="flex-1" />
 
-      {/* Right: Theme Toggle + Window Controls */}
+      {/* Right: Sync Badge + Theme Toggle + Window Controls */}
       <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
+        {/* Sync Status Badge */}
+        {onSettingsClick && (
+          <SyncStatusBadge onClick={onSettingsClick} className="mr-1" />
+        )}
+
         {/* Theme Toggle */}
         <button
           onClick={cycleTheme}

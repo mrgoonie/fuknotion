@@ -18,6 +18,10 @@ export function DeleteNote(arg1) {
   return window['go']['main']['App']['DeleteNote'](arg1);
 }
 
+export function GetDriveAccountInfo() {
+  return window['go']['main']['App']['GetDriveAccountInfo']();
+}
+
 export function GetDriveAuthURL() {
   return window['go']['main']['App']['GetDriveAuthURL']();
 }
@@ -48,6 +52,14 @@ export function ListNotes(arg1) {
 
 export function ListWorkspaces() {
   return window['go']['main']['App']['ListWorkspaces']();
+}
+
+export function SignOutDrive() {
+  return window['go']['main']['App']['SignOutDrive']();
+}
+
+export function StartDriveAuth() {
+  return window['go']['main']['App']['StartDriveAuth']();
 }
 
 export function ToggleFavorite(arg1) {

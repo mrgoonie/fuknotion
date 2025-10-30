@@ -19,15 +19,19 @@ import { useUIStore } from '../stores/uiStore'
 import { cn } from '../lib/utils'
 import { Note } from '../lib/types'
 
-export function Sidebar() {
+interface SidebarProps {
+  onSettingsClick?: () => void
+}
+
+export function Sidebar({ onSettingsClick }: SidebarProps) {
   const { notes, currentNote, setCurrentNote, createNote, toggleFavorite } = useNoteStore()
   const { currentWorkspace } = useWorkspaceStore()
   const { isSidebarCollapsed, toggleSidebar, addTab } = useUIStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
-  const favoriteNotes = notes.filter(n => n.isFavorite && !n.isDeleted)
-  const workspaceNotes = notes.filter(n => !n.isDeleted && !n.parentId)
+  const favoriteNotes = (notes || []).filter(n => n.isFavorite && !n.isDeleted)
+  const workspaceNotes = (notes || []).filter(n => !n.isDeleted && !n.parentId)
   const filteredNotes = searchQuery
     ? workspaceNotes.filter(n =>
         n.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -58,46 +62,43 @@ export function Sidebar() {
     setExpandedFolders(newExpanded)
   }
 
-  if (isSidebarCollapsed) {
-    return (
-      <div className="w-12 bg-surface border-r border-border flex flex-col items-center py-4 gap-4">
-        <button
-          onClick={toggleSidebar}
-          className={cn(
-            "w-8 h-8 rounded-md flex items-center justify-center",
-            "hover:bg-surface-elevated transition-colors",
-            "text-foreground-muted"
-          )}
-          aria-label="Expand sidebar"
-        >
-          <ChevronsRight className="w-4 h-4" />
-        </button>
-        <button
-          onClick={handleCreateNote}
-          className={cn(
-            "w-8 h-8 rounded-md flex items-center justify-center",
-            "hover:bg-surface-elevated transition-colors",
-            "text-foreground-muted"
-          )}
-          aria-label="New page"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-        <button
-          className={cn(
-            "w-8 h-8 rounded-md flex items-center justify-center",
-            "hover:bg-surface-elevated transition-colors",
-            "text-foreground-muted"
-          )}
-          aria-label="Search"
-        >
-          <Search className="w-4 h-4" />
-        </button>
-      </div>
-    )
-  }
-
-  return (
+  // Conditional rendering without early return to maintain hooks consistency
+  return isSidebarCollapsed ? (
+    <div className="w-12 bg-surface border-r border-border flex flex-col items-center py-4 gap-4">
+      <button
+        onClick={toggleSidebar}
+        className={cn(
+          "w-8 h-8 rounded-md flex items-center justify-center",
+          "hover:bg-surface-elevated transition-colors",
+          "text-foreground-muted"
+        )}
+        aria-label="Expand sidebar"
+      >
+        <ChevronsRight className="w-4 h-4" />
+      </button>
+      <button
+        onClick={handleCreateNote}
+        className={cn(
+          "w-8 h-8 rounded-md flex items-center justify-center",
+          "hover:bg-surface-elevated transition-colors",
+          "text-foreground-muted"
+        )}
+        aria-label="New page"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+      <button
+        className={cn(
+          "w-8 h-8 rounded-md flex items-center justify-center",
+          "hover:bg-surface-elevated transition-colors",
+          "text-foreground-muted"
+        )}
+        aria-label="Search"
+      >
+        <Search className="w-4 h-4" />
+      </button>
+    </div>
+  ) : (
     <div className="w-56 bg-surface border-r border-border flex flex-col overflow-hidden">
       {/* Header */}
       <div className="h-12 px-3 flex items-center justify-between border-b border-border-subtle">
@@ -202,6 +203,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="border-t border-border-subtle p-2 space-y-0.5">
         <button
+          onClick={onSettingsClick}
           className={cn(
             "w-full h-8 px-2 rounded-md flex items-center gap-2",
             "hover:bg-surface-elevated transition-colors",

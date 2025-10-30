@@ -2,11 +2,10 @@ package sync
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -16,47 +15,114 @@ import (
 
 // DriveSync handles Google Drive synchronization
 type DriveSync struct {
-	service *drive.Service
-	config  *oauth2.Config
-	token   *oauth2.Token
-	dataDir string
+	service        *drive.Service
+	config         *oauth2.Config
+	token          *oauth2.Token
+	keyringStore   *KeyringStore
+	loopbackServer *LoopbackServer
+	pkceChallenge  *PKCEChallenge
 }
 
 // NewDriveSync creates a new Google Drive sync manager
-func NewDriveSync(dataDir string) (*DriveSync, error) {
+func NewDriveSync() (*DriveSync, error) {
+	// Initialize keyring store for secure token storage
+	keyringStore, err := NewKeyringStore()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize keyring: %w", err)
+	}
+
+	// Initialize loopback server for OAuth callback
+	loopbackServer := NewLoopbackServer()
+
 	// OAuth2 configuration for Google Drive
 	config := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  "http://localhost:34115/callback",
+		RedirectURL:  loopbackServer.GetRedirectURL(),
 		Scopes: []string{
 			drive.DriveFileScope, // Access to files created by this app
 		},
 		Endpoint: google.Endpoint,
 	}
 
-	return &DriveSync{
-		config:  config,
-		dataDir: dataDir,
-	}, nil
+	ds := &DriveSync{
+		config:         config,
+		keyringStore:   keyringStore,
+		loopbackServer: loopbackServer,
+	}
+
+	// Try to load existing token from keyring
+	if err := ds.LoadToken(); err == nil && ds.token != nil {
+		// Token loaded, initialize service
+		ctx := context.Background()
+		if err := ds.initService(ctx); err != nil {
+			// Token might be invalid, ignore error
+		}
+	}
+
+	return ds, nil
 }
 
-// GetAuthURL returns the OAuth2 authorization URL
+// StartAuth initiates OAuth flow with PKCE and loopback server
+func (ds *DriveSync) StartAuth() (string, error) {
+	// Generate PKCE challenge
+	pkce, err := GeneratePKCEChallenge()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate PKCE: %w", err)
+	}
+	ds.pkceChallenge = pkce
+
+	// Start loopback server
+	if err := ds.loopbackServer.Start(); err != nil {
+		return "", fmt.Errorf("failed to start callback server: %w", err)
+	}
+
+	// Build authorization URL with PKCE
+	authURL := ds.config.AuthCodeURL(
+		ds.loopbackServer.GetState(),
+		oauth2.AccessTypeOffline,
+		oauth2.SetAuthURLParam("code_challenge", pkce.Challenge),
+		oauth2.SetAuthURLParam("code_challenge_method", pkce.Method),
+		oauth2.SetAuthURLParam("prompt", "consent"),
+	)
+
+	return authURL, nil
+}
+
+// GetAuthURL returns the OAuth2 authorization URL (deprecated - use StartAuth)
 func (ds *DriveSync) GetAuthURL() string {
-	return ds.config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	url, _ := ds.StartAuth()
+	return url
 }
 
-// ExchangeCode exchanges an authorization code for an access token
-func (ds *DriveSync) ExchangeCode(ctx context.Context, code string) error {
-	token, err := ds.config.Exchange(ctx, code)
+// WaitForAuth waits for OAuth callback and exchanges code for token
+func (ds *DriveSync) WaitForAuth(ctx context.Context) error {
+	// Wait for callback with 2-minute timeout
+	code, err := ds.loopbackServer.WaitForCode(2 * time.Minute)
+	if err != nil {
+		ds.loopbackServer.Stop()
+		return fmt.Errorf("failed to receive auth code: %w", err)
+	}
+
+	// Stop loopback server
+	if err := ds.loopbackServer.Stop(); err != nil {
+		return fmt.Errorf("failed to stop callback server: %w", err)
+	}
+
+	// Exchange code for token with PKCE verifier
+	token, err := ds.config.Exchange(
+		ctx,
+		code,
+		oauth2.SetAuthURLParam("code_verifier", ds.pkceChallenge.Verifier),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to exchange code: %w", err)
 	}
 
 	ds.token = token
 
-	// Save token to file
-	if err := ds.saveToken(); err != nil {
+	// Save token to keyring
+	if err := ds.keyringStore.SaveToken(token); err != nil {
 		return fmt.Errorf("failed to save token: %w", err)
 	}
 
@@ -68,34 +134,53 @@ func (ds *DriveSync) ExchangeCode(ctx context.Context, code string) error {
 	return nil
 }
 
-// LoadToken loads a saved token from file
-func (ds *DriveSync) LoadToken() error {
-	tokenPath := filepath.Join(ds.dataDir, "google_token.json")
-	data, err := os.ReadFile(tokenPath)
+// ExchangeCode exchanges an authorization code for an access token (deprecated - use WaitForAuth)
+func (ds *DriveSync) ExchangeCode(ctx context.Context, code string) error {
+	token, err := ds.config.Exchange(ctx, code)
 	if err != nil {
-		return fmt.Errorf("failed to read token: %w", err)
+		return fmt.Errorf("failed to exchange code: %w", err)
 	}
 
-	var token oauth2.Token
-	if err := json.Unmarshal(data, &token); err != nil {
-		return fmt.Errorf("failed to parse token: %w", err)
+	ds.token = token
+
+	// Save token to keyring
+	if err := ds.keyringStore.SaveToken(token); err != nil {
+		return fmt.Errorf("failed to save token: %w", err)
 	}
 
-	ds.token = &token
+	// Initialize Drive service
+	if err := ds.initService(ctx); err != nil {
+		return fmt.Errorf("failed to initialize service: %w", err)
+	}
+
 	return nil
 }
 
-// saveToken saves the OAuth2 token to file
-func (ds *DriveSync) saveToken() error {
-	tokenPath := filepath.Join(ds.dataDir, "google_token.json")
-	data, err := json.Marshal(ds.token)
+// LoadToken loads a saved token from keyring
+func (ds *DriveSync) LoadToken() error {
+	token, err := ds.keyringStore.LoadToken()
 	if err != nil {
-		return fmt.Errorf("failed to marshal token: %w", err)
+		return fmt.Errorf("failed to load token: %w", err)
 	}
 
-	if err := os.WriteFile(tokenPath, data, 0600); err != nil {
-		return fmt.Errorf("failed to write token: %w", err)
+	if token == nil {
+		return fmt.Errorf("no token found")
 	}
+
+	ds.token = token
+	return nil
+}
+
+// SignOut removes stored token and clears authentication
+func (ds *DriveSync) SignOut() error {
+	// Delete token from keyring
+	if err := ds.keyringStore.DeleteToken(); err != nil {
+		return fmt.Errorf("failed to delete token: %w", err)
+	}
+
+	// Clear in-memory token and service
+	ds.token = nil
+	ds.service = nil
 
 	return nil
 }
@@ -115,6 +200,30 @@ func (ds *DriveSync) initService(ctx context.Context) error {
 // IsAuthenticated checks if the user is authenticated with Google Drive
 func (ds *DriveSync) IsAuthenticated() bool {
 	return ds.token != nil && ds.token.Valid()
+}
+
+// GetAccountInfo returns authenticated user's Google account information
+func (ds *DriveSync) GetAccountInfo(ctx context.Context) (map[string]interface{}, error) {
+	if !ds.IsAuthenticated() {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	// Get user info from Drive API
+	about, err := ds.service.About.Get().
+		Context(ctx).
+		Fields("user(displayName,emailAddress,photoLink)").
+		Do()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get account info: %w", err)
+	}
+
+	return map[string]interface{}{
+		"email":      about.User.EmailAddress,
+		"name":       about.User.DisplayName,
+		"photoUrl":   about.User.PhotoLink,
+		"authorized": true,
+	}, nil
 }
 
 // UploadFile uploads a file to Google Drive

@@ -75,7 +75,7 @@ func (db *DB) ListNotes(workspaceID string) ([]*models.Note, error) {
 	}
 	defer rows.Close()
 
-	var notes []*models.Note
+	notes := make([]*models.Note, 0)
 	for rows.Next() {
 		note := &models.Note{}
 		err := rows.Scan(

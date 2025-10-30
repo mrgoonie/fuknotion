@@ -48,7 +48,7 @@ export function TabBar() {
 
   const handleTabClick = (tab: Tab) => {
     setActiveTab(tab.id)
-    const note = notes.find(n => n.id === tab.noteId)
+    const note = notes?.find(n => n.id === tab.noteId)
     if (note) {
       setCurrentNote(note)
     }
@@ -63,7 +63,7 @@ export function TabBar() {
       const currentIndex = tabs.findIndex(t => t.id === tabId)
       const nextTab = tabs[currentIndex + 1] || tabs[currentIndex - 1]
       if (nextTab) {
-        const note = notes.find(n => n.id === nextTab.noteId)
+        const note = notes?.find(n => n.id === nextTab.noteId)
         if (note) {
           setCurrentNote(note)
         }

@@ -39,7 +39,7 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const notes = await ListNotes(workspaceId)
-      set({ notes, isLoading: false })
+      set({ notes: notes || [], isLoading: false })
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to load notes",

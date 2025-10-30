@@ -48,15 +48,14 @@ func (a *App) startup(ctx context.Context) {
 	a.db = db
 
 	// Initialize Google Drive sync
-	driveSync, err := sync.NewDriveSync(dataDir)
+	driveSync, err := sync.NewDriveSync()
 	if err != nil {
 		fmt.Println("Error initializing Drive sync:", err)
 	} else {
 		a.driveSync = driveSync
 
-		// Try to load saved token
-		if err := driveSync.LoadToken(); err == nil {
-			// Initialize sync queue if authenticated
+		// Initialize sync queue if authenticated
+		if driveSync.IsAuthenticated() {
 			a.syncQueue = sync.NewSyncQueue(db, driveSync)
 			go a.syncQueue.Start(ctx)
 		}
@@ -199,4 +198,68 @@ func (a *App) TriggerSync() error {
 	}
 
 	return nil
+}
+
+// StartDriveAuth initiates Google Drive OAuth flow
+// Opens system browser for authentication
+func (a *App) StartDriveAuth() (string, error) {
+	if a.driveSync == nil {
+		return "", fmt.Errorf("drive sync not initialized")
+	}
+
+	authURL, err := a.driveSync.StartAuth()
+	if err != nil {
+		return "", fmt.Errorf("failed to start auth: %w", err)
+	}
+
+	// Start goroutine to wait for callback
+	go func() {
+		if err := a.driveSync.WaitForAuth(a.ctx); err != nil {
+			fmt.Println("Auth error:", err)
+			return
+		}
+
+		// Authentication successful, start sync queue
+		if a.syncQueue == nil {
+			a.syncQueue = sync.NewSyncQueue(a.db, a.driveSync)
+			go a.syncQueue.Start(a.ctx)
+		}
+	}()
+
+	return authURL, nil
+}
+
+// SignOutDrive signs out from Google Drive
+func (a *App) SignOutDrive() error {
+	if a.driveSync == nil {
+		return fmt.Errorf("drive sync not initialized")
+	}
+
+	// Stop sync queue
+	if a.syncQueue != nil {
+		// Note: SyncQueue doesn't have Stop method yet
+		a.syncQueue = nil
+	}
+
+	// Sign out and remove token
+	if err := a.driveSync.SignOut(); err != nil {
+		return fmt.Errorf("failed to sign out: %w", err)
+	}
+
+	return nil
+}
+
+// GetDriveAccountInfo returns authenticated user's account information
+func (a *App) GetDriveAccountInfo() (map[string]interface{}, error) {
+	if a.driveSync == nil {
+		return nil, fmt.Errorf("drive sync not initialized")
+	}
+
+	if !a.driveSync.IsAuthenticated() {
+		return map[string]interface{}{
+			"authorized": false,
+		}, nil
+	}
+
+	return a.driveSync.GetAccountInfo(a.ctx)
 }

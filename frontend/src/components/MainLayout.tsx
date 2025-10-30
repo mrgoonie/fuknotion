@@ -1,11 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { TitleBar } from './TitleBar'
 import { Sidebar } from './Sidebar'
 import { TabBar } from './TabBar'
 import { Editor } from './Editor'
+import { OnboardingWizard } from './onboarding'
+import { SettingsModal } from './settings'
 import { useWorkspaceStore } from '../stores/workspaceStore'
 import { useNoteStore } from '../stores/noteStore'
 import { useUIStore } from '../stores/uiStore'
+import { useSyncStore } from '../stores/syncStore'
 import { cn } from '../lib/utils'
 import { Loader2 } from 'lucide-react'
 
@@ -13,14 +16,22 @@ export function MainLayout() {
   const { loadWorkspaces, currentWorkspace, isLoading: isLoadingWorkspaces } = useWorkspaceStore()
   const { loadNotes, isLoading: isLoadingNotes } = useNoteStore()
   const { theme } = useUIStore()
+  const { checkAuth, isAuthenticated, showOnboarding, setShowOnboarding } = useSyncStore()
+  const [showSettings, setShowSettings] = useState(false)
 
   // Load initial data on mount
   useEffect(() => {
     const initializeApp = async () => {
       await loadWorkspaces()
+      await checkAuth()
+
+      // Show onboarding if not authenticated and not dismissed
+      if (!isAuthenticated && !localStorage.getItem('onboarding_dismissed')) {
+        setShowOnboarding(true)
+      }
     }
     initializeApp()
-  }, [loadWorkspaces])
+  }, [loadWorkspaces, checkAuth, isAuthenticated, setShowOnboarding])
 
   // Load notes when workspace changes
   useEffect(() => {
@@ -65,33 +76,45 @@ export function MainLayout() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
-      {/* Title Bar */}
-      <TitleBar />
+    <>
+      <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+        {/* Title Bar */}
+        <TitleBar onSettingsClick={() => setShowSettings(true)} />
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar />
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Sidebar */}
+          <Sidebar onSettingsClick={() => setShowSettings(true)} />
 
-        {/* Editor Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab Bar */}
-          <TabBar />
+          {/* Editor Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Tab Bar */}
+            <TabBar />
 
-          {/* Editor */}
-          {isLoadingNotes ? (
-            <div className="flex-1 flex items-center justify-center bg-background">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 mx-auto mb-4 text-accent animate-spin" />
-                <p className="text-sm text-foreground-muted">Loading notes...</p>
+            {/* Editor */}
+            {isLoadingNotes ? (
+              <div className="flex-1 flex items-center justify-center bg-background">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 mx-auto mb-4 text-accent animate-spin" />
+                  <p className="text-sm text-foreground-muted">Loading notes...</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Editor />
-          )}
+            ) : (
+              <Editor />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        defaultTab="account"
+      />
+    </>
   )
 }

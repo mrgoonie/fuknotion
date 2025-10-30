@@ -10,6 +10,8 @@ export function CreateWorkspace(arg1:string):Promise<models.Workspace>;
 
 export function DeleteNote(arg1:string):Promise<void>;
 
+export function GetDriveAccountInfo():Promise<Record<string, any>>;
+
 export function GetDriveAuthURL():Promise<string>;
 
 export function GetNote(arg1:string):Promise<models.Note>;
@@ -25,6 +27,10 @@ export function IsDriveAuthenticated():Promise<boolean>;
 export function ListNotes(arg1:string):Promise<Array<models.Note>>;
 
 export function ListWorkspaces():Promise<Array<models.Workspace>>;
+
+export function SignOutDrive():Promise<void>;
+
+export function StartDriveAuth():Promise<string>;
 
 export function ToggleFavorite(arg1:string):Promise<void>;
 

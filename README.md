@@ -123,6 +123,25 @@ cd frontend && npm run dev
 go build -o fuknotion .
 ```
 
+### Build Notes
+
+#### Development vs Production Builds
+
+**Development Mode (`wails dev`)**
+- Uses private macOS APIs for development features
+- **Cannot be submitted to Apple AppStore**
+- Suitable for testing, debugging, and development
+- Expected warnings:
+  - `time.Time` binding warnings (resolved with `ts_type` tags)
+  - OpenSSL search path warning on Apple Silicon (benign - uses `/opt/homebrew` instead of `/usr/local`)
+  - AppStore compatibility warning (expected in dev mode)
+
+**Production Mode (`wails build`)**
+- Removes private API usage
+- **Required for Apple AppStore submission**
+- For direct distribution outside AppStore, dev builds work fine
+- See [Wails documentation](https://wails.io/docs/guides/mac-appstore/) for AppStore submission requirements
+
 ## 📊 Current Status
 
 **Phases 1-3 Complete** ✅
