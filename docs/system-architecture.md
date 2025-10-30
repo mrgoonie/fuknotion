@@ -1,983 +1,882 @@
-# Fuknotion System Architecture
+# System Architecture
 
-**Version:** 1.0
-**Last Updated:** 2025-10-29
-**Status:** Phase 0 Complete
+**Last Updated**: 2025-10-26
+**Version**: 1.8.0
+**Project**: ClaudeKit Engineer
 
+## Overview
+
+ClaudeKit Engineer implements a multi-agent AI orchestration architecture where specialized agents collaborate through a file-based communication protocol. The system enables developers to leverage AI assistance throughout the entire software development lifecycle - from planning and implementation to testing, review, and deployment.
+
+## Architectural Pattern
+
+### Pattern Classification
+**Primary Pattern**: Microservices-inspired Agent Architecture
+**Secondary Patterns**:
+- Command Pattern (slash commands)
+- Observer Pattern (agent communication)
+- Strategy Pattern (workflow selection)
+- Template Method Pattern (agent workflows)
+
+### Design Philosophy
+- **Decoupled Agents**: Each agent is independent and specialized
+- **File-Based Communication**: Agents communicate via markdown reports
+- **Workflow Orchestration**: Coordinated agent execution (sequential/parallel)
+- **Configuration-Driven**: Agents and commands defined in markdown
+- **AI-First Development**: Leverage AI at every stage of SDLC
+
+## System Components
+
+### 1. Core Layer
+
+#### 1.1 CLI Interface
+**Location**: Claude Code / Open Code CLI
+**Responsibility**: User interaction and command routing
+**Key Functions**:
+- Parse slash commands
+- Route to appropriate agent workflows
+- Display results to users
+- Manage conversation context
+
+**Technology**: Anthropic Claude Code CLI / OpenCode AI CLI
+
+#### 1.2 Command Parser
+**Location**: Built into CLI
+**Responsibility**: Command interpretation and argument extraction
+**Input**: Slash command with arguments (`/command arg1 arg2`)
+**Output**: Parsed command and argument values
+**Argument Variables**:
+- `$ARGUMENTS` - All arguments as single string
+- `$1, $2, $3...` - Individual positional arguments
+
+#### 1.3 Configuration Manager
+**Location**: `.claude/` and `.opencode/` directories
+**Responsibility**: Load agent and command definitions
+**File Types**:
+- Agent definitions (`.md` with YAML frontmatter)
+- Command definitions (`.md` with embedded agent calls)
+- Skill modules (knowledge bases)
+- Workflow templates
+
+### 2. Agent Layer
+
+#### 2.1 Agent Types
+
+**Planning Agents**:
+- `planner` - Technical planning and architecture
+- `researcher` - Research and analysis
+- `planner-researcher` - Combined planning and research (Opus model)
+- `brainstormer` - Solution ideation
+
+**Implementation Agents**:
+- Main agent (user interaction) - Implements code
+- `scout` - Parallel codebase exploration
+- `ui-ux-designer` - Design creation
+- `ui-ux-developer` - Design implementation
+- `database-admin` - Database operations
+
+**Quality Assurance Agents**:
+- `code-reviewer` - Code quality assessment
+- `tester` - Test creation and execution
+- `debugger` - Issue analysis and debugging
+
+**Documentation Agents**:
+- `docs-manager` - Documentation maintenance
+- `copywriter` - Content creation
+- `journal-writer` - Development journaling
+
+**Operations Agents**:
+- `git-manager` - Version control operations
+- `project-manager` - Progress tracking and oversight
+
+#### 2.2 Agent Definition Structure
+
+```yaml
+---
+name: agent-name
+description: Agent purpose and use cases
+mode: subagent | all
+model: anthropic/claude-sonnet-4-20250514
+temperature: 0.1
 ---
 
-## Table of Contents
-
-1. [High-Level Architecture](#high-level-architecture)
-2. [Backend Architecture](#backend-architecture)
-3. [Frontend Architecture](#frontend-architecture)
-4. [Data Flow](#data-flow)
-5. [Sync Architecture](#sync-architecture)
-6. [Database Schema](#database-schema)
-7. [Security Architecture](#security-architecture)
-8. [Deployment Architecture](#deployment-architecture)
-
----
-
-## High-Level Architecture
-
-### System Overview
-
-Fuknotion follows a **local-first architecture** with optional cloud sync. The desktop app runs natively on Windows/macOS, with all data stored locally in SQLite and synced to Google Drive when online.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FUKNOTION DESKTOP APP                     │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              FRONTEND (React + TypeScript)                │  │
-│  │                                                            │  │
-│  │  ┌───────────┐  ┌───────────┐  ┌───────────┐            │  │
-│  │  │  Sidebar  │  │  Editor   │  │   Tabs    │            │  │
-│  │  └───────────┘  └───────────┘  └───────────┘            │  │
-│  │                                                            │  │
-│  │  ┌─────────────────────────────────────────┐             │  │
-│  │  │     Zustand Stores (State Management)   │             │  │
-│  │  └─────────────────────────────────────────┘             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                           │                                      │
-│                           │ Wails Bindings (IPC)                │
-│                           ▼                                      │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                BACKEND (Go)                               │  │
-│  │                                                            │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐               │  │
-│  │  │ Database │  │   Sync   │  │ Markdown │               │  │
-│  │  │  Layer   │  │  Engine  │  │  Parser  │               │  │
-│  │  └──────────┘  └──────────┘  └──────────┘               │  │
-│  │       │             │                                      │  │
-│  │       ▼             ▼                                      │  │
-│  │  ┌──────────┐  ┌──────────┐                              │  │
-│  │  │  SQLite  │  │  Sync    │                              │  │
-│  │  │   WAL    │  │  Queue   │                              │  │
-│  │  └──────────┘  └──────────┘                              │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ HTTPS (Optional)
-                              ▼
-                     ┌─────────────────┐
-                     │  Google Drive   │
-                     │   (Cloud Sync)  │
-                     └─────────────────┘
+# Agent instructions in markdown
+## Core Responsibilities
+## Workflow Process
+## Output Requirements
+## Quality Standards
 ```
 
-### Key Architectural Decisions
+**Agent Modes**:
+- `subagent`: Spawned by other agents, runs independently
+- `all`: Can be invoked as main or sub agent
 
-**1. Wails v2 Framework**
-- Combines Go backend with web frontend
-- Native OS integration (file system, window management)
-- No Electron overhead (smaller binary, less memory)
-- WebView rendering (uses system browser engine)
+**Model Selection**:
+- `claude-sonnet-4-20250514` - Fast, efficient (most agents)
+- `claude-opus-4-1-20250805` - Advanced reasoning (planner-researcher)
+- `google/gemini-2.5-flash` - Cost-effective (docs-manager)
+- `grok-code` - Specialized (git-manager)
 
-**2. Local-First Design**
-- SQLite as single source of truth
-- All operations work offline
-- Sync queue for deferred cloud operations
-- Conflict resolution at sync time
+#### 2.3 Agent Communication Protocol
 
-**3. CGO-Free Build**
-- Uses `modernc.org/sqlite` (pure Go)
-- Cross-platform builds without C compiler
-- Simpler deployment and distribution
+**Communication Medium**: File system (markdown files)
+**Report Location**: `./plans/reports/`
+**Naming Convention**: `YYMMDD-from-[source]-to-[dest]-[task]-report.md`
 
-**4. Block-Based Editor**
-- BlockNote library (React)
-- Notion-like editing experience
-- Built-in undo/redo, drag-drop
-- Markdown serialization
+**Report Structure**:
+```markdown
+# Task Report: [Task Name]
 
----
+**From**: [Source Agent]
+**To**: [Destination Agent]
+**Date**: YYYY-MM-DD
+**Status**: [Complete|In Progress|Blocked]
 
-## Backend Architecture
+## Summary
+Brief overview of findings/results
 
-### Go Service Layers
+## Details
+Comprehensive information
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      app.go (Entry Point)                    │
-│  - Wails lifecycle (startup, shutdown)                       │
-│  - Exposes methods to frontend                               │
-│  - Dependency injection (database, sync)                     │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-        ▼                   ▼                   ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│   database   │  │     sync     │  │   markdown   │
-│    package   │  │   package    │  │   package    │
-└──────────────┘  └──────────────┘  └──────────────┘
-        │
-        ├──► database.go     - DB init, migrations
-        ├──► notes.go        - Note CRUD
-        ├──► workspaces.go   - Workspace CRUD
-        └──► models/types.go - Data models
+## Recommendations
+Actionable next steps
+
+## Concerns
+Issues, blockers, or questions
 ```
 
-### Database Layer
+**Communication Patterns**:
+1. **Request-Response**: Agent A requests, Agent B responds
+2. **Broadcast**: Agent publishes report for multiple consumers
+3. **Chain**: Sequential handoffs (A → B → C)
+4. **Fan-Out**: Parallel execution (A spawns B, C, D)
+5. **Fan-In**: Collect results from parallel agents
 
-**Purpose:** Encapsulate all SQLite operations.
+### 3. Command Layer
 
-**Components:**
-- `database.go` - Connection management, schema migrations
-- `notes.go` - Note CRUD operations
-- `workspaces.go` - Workspace CRUD operations
-- `models/types.go` - Data structures (Note, Workspace, Member, SyncStatus)
+#### 3.1 Command Categories
 
-**Design Patterns:**
-- Repository pattern (DB struct with methods)
-- Soft delete (is_deleted flag, not hard delete)
-- UUID-based IDs (not auto-increment for sync)
-- Timestamp tracking (created_at, updated_at)
+**Core Development**:
+- `/plan` - Research and planning
+- `/cook` - Feature implementation
+- `/test` - Test execution
+- `/ask` - Technical consultation
+- `/bootstrap` - Project initialization
+- `/brainstorm` - Solution ideation
 
-**Key Features:**
-- WAL mode for concurrent reads
-- Foreign key constraints enforced
-- Indexes on common queries
-- Transaction support (future)
+**Debugging & Fixing**:
+- `/debug` - Deep analysis
+- `/fix:fast` - Quick fixes
+- `/fix:hard` - Complex problems
+- `/fix:ci` - CI/CD debugging
+- `/fix:test` - Test debugging
+- `/fix:types` - Type error resolution
+- `/fix:logs` - Log analysis
+- `/fix:ui` - UI issue fixing
 
-### Sync Layer (Phase 5)
+**Design & Content**:
+- `/design:*` - Design creation variants
+- `/content:*` - Content creation variants
 
-**Purpose:** Google Drive sync with conflict resolution.
+**Documentation**:
+- `/docs:init` - Initial docs
+- `/docs:update` - Update docs
+- `/docs:summarize` - Generate summaries
 
-**Components:**
-- `oauth.go` - OAuth 2.0 flow with PKCE
-- `drive.go` - Drive API client (upload, download, list)
-- `queue.go` - Sync queue processor
-- `conflict.go` - Three-way merge algorithm
+**Git Operations**:
+- `/git:cm` - Commit
+- `/git:cp` - Commit and push
+- `/git:pr` - Create PR
 
-**Sync Strategy:**
-1. User edits note → queued for upload
-2. Background worker runs every 5min
-3. Process queue (batch 10 notes)
-4. Detect conflicts (compare timestamps)
-5. Resolve with three-way merge or UI prompt
+**Project Management**:
+- `/watzup` - Status review
+- `/journal` - Journaling
+- `/scout` - Codebase exploration
 
-**Conflict Resolution:**
-- No conflict: Local changes win (upload)
-- Remote newer: Download and merge
-- Both changed: Three-way merge (local, remote, base)
-- Merge failed: Show conflict UI to user
-
-### Markdown Layer (Phase 2)
-
-**Purpose:** Parse and render markdown.
-
-**Components:**
-- `parser.go` - Goldmark configuration
-
-**Features:**
-- GFM (GitHub Flavored Markdown) support
-- Code syntax highlighting
-- Custom extensions (callouts, internal links)
-- Markdown → HTML rendering for export
-
----
-
-## Frontend Architecture
-
-### Component Hierarchy
+#### 3.2 Command Workflow Pattern
 
 ```
-App.tsx
-│
-├─── TitleBar          (window controls)
-│
-├─── Sidebar
-│    ├─── Search
-│    ├─── QuickActions
-│    ├─── FavoritesList
-│    ├─── PageTree      (drag-drop, nested)
-│    └─── Footer        (settings, trash, theme)
-│
-├─── TabBar
-│    └─── Tab          (draggable, closable)
-│
-└─── EditorPage
-     ├─── TitleInput   (auto-save)
-     └─── Editor       (BlockNote)
-          ├─── SlashMenu
-          ├─── MiniToolbar
-          └─── Blocks
+User Input: /command [args]
+    ↓
+Command Parser
+    ↓
+Load Command Definition
+    ↓
+Substitute Arguments
+    ↓
+Execute Agent Workflow
+    ↓
+Sequential or Parallel Execution
+    ↓
+Collect Results
+    ↓
+Present to User
 ```
 
-### State Management
+### 4. Workflow Layer
 
-**Zustand Stores:**
+#### 4.1 Orchestration Patterns
 
-**noteStore.ts**
-```typescript
-interface NoteStore {
-  notes: Note[]
-  activeNote: Note | null
-  loading: boolean
-  error: string | null
+**Sequential Chaining**:
+```
+Planner → Researcher → Planner → Main Agent → Tester → Code Reviewer → Docs Manager → Git Manager
+```
+Use when tasks have dependencies
 
-  // Actions
-  loadNotes: (workspaceId: string) => Promise<void>
-  createNote: (workspaceId, title, content) => Promise<void>
-  updateNote: (id, title, content) => Promise<void>
-  deleteNote: (id: string) => Promise<void>
-  setActiveNote: (note: Note | null) => void
-}
+**Parallel Execution**:
+```
+            ┌─→ Researcher (Auth) ─┐
+Planner ────┼─→ Researcher (DB) ───┼─→ Planner (Synthesize)
+            └─→ Researcher (UI) ───┘
+```
+Use for independent research tasks
+
+**Query Fan-Out**:
+```
+Main Agent → Planner → [Multiple Researchers in Parallel] → Planner → Main Agent
+```
+Explore different approaches simultaneously
+
+#### 4.2 Standard Workflows
+
+**Feature Development Workflow**:
+1. User: `/cook "add user authentication"`
+2. Planner: Create implementation plan
+3. Researchers: Explore auth solutions (parallel)
+4. Planner: Synthesize research, create detailed plan
+5. Main Agent: Implement code
+6. Main Agent: Run type checking/compilation
+7. Tester: Write and run tests
+8. (If tests fail): Debugger analyzes, loop to step 5
+9. Code Reviewer: Review implementation
+10. Docs Manager: Update documentation
+11. Git Manager: Commit with conventional message
+
+**Bug Fix Workflow**:
+1. User: `/debug "API timeout errors"`
+2. Debugger: Analyze logs and system
+3. Debugger: Identify root cause
+4. Planner: Create fix plan
+5. Main Agent: Implement solution
+6. Tester: Validate fix
+7. Code Reviewer: Review changes
+8. Git Manager: Commit fix
+
+**Documentation Update Workflow**:
+1. User: `/docs:update`
+2. Docs Manager: Check doc freshness
+3. (If >1 day old): Run `repomix` for codebase summary
+4. Docs Manager: Analyze codebase changes
+5. Docs Manager: Update affected documentation
+6. Docs Manager: Validate naming conventions
+7. Docs Manager: Create update report
+
+### 5. Skills Layer
+
+#### 5.1 Skill Architecture
+
+**Purpose**: Reusable knowledge modules for specific technologies
+
+**Structure**:
+```
+.claude/skills/
+└── [skill-name]/
+    ├── SKILL.md           # Main skill definition
+    ├── references/        # Supporting documentation
+    │   ├── api-ref.md
+    │   └── examples.md
+    └── scripts/           # Utility scripts (if applicable)
 ```
 
-**workspaceStore.ts**
-```typescript
-interface WorkspaceStore {
-  workspaces: Workspace[]
-  activeWorkspace: Workspace | null
+**Skill Categories**:
+- **Authentication**: better-auth
+- **Cloud Platforms**: Cloudflare, Google Cloud
+- **Databases**: MongoDB, PostgreSQL
+- **Design**: Canvas design generation
+- **Debugging**: Systematic approaches
+- **Development**: Next.js, Turborepo
+- **Documentation**: Repomix, docs-seeker
+- **Document Processing**: PDF, DOCX, PPTX, XLSX
+- **Infrastructure**: Docker
+- **Media**: FFmpeg, ImageMagick
+- **MCP**: Server building
+- **Problem Solving**: Meta-patterns, thinking frameworks
+- **UI Frameworks**: shadcn/ui, Tailwind CSS
+- **Ecommerce**: Shopify
 
-  // Actions
-  loadWorkspaces: () => Promise<void>
-  createWorkspace: (name: string) => Promise<void>
-  switchWorkspace: (id: string) => void
-}
+#### 5.2 Skill Invocation
+
+**Invocation**: `Skill` tool in CLI
+**Usage**: Agents invoke skills to access specialized knowledge
+**Example**:
+```
+Planner needs Next.js expertise
+  ↓
+Invokes "nextjs" skill
+  ↓
+Skill provides implementation guidance
+  ↓
+Planner incorporates into plan
 ```
 
-**uiStore.ts**
-```typescript
-interface UIStore {
-  sidebarOpen: boolean
-  theme: 'light' | 'dark' | 'system'
-  openTabs: Tab[]
-  activeTabId: string | null
+### 6. Integration Layer
 
-  // Actions
-  toggleSidebar: () => void
-  setTheme: (theme) => void
-  openTab: (noteId: string) => void
-  closeTab: (tabId: string) => void
-}
-```
+#### 6.1 MCP (Model Context Protocol) Integration
 
-**Why Zustand?**
-- Lightweight (1KB)
-- No boilerplate (no actions/reducers)
-- TypeScript-first
-- React hooks integration
-- Middleware support (persist, devtools)
+**Available MCP Servers**:
 
-### Component Patterns
+**context7** (Documentation):
+- Read latest docs for packages/plugins
+- Access up-to-date technical information
 
-**Container/Presenter Pattern:**
-```tsx
-// EditorPage.tsx (Container - connects to store)
-export function EditorPage() {
-  const { activeNote, updateNote } = useNoteStore()
-  const handleSave = (content) => updateNote(activeNote.id, content)
+**sequential-thinking** (Problem Solving):
+- Structured thinking process
+- Break down complex problems
+- Reflective analysis
 
-  return <Editor note={activeNote} onSave={handleSave} />
-}
+**SearchAPI** (Web Search):
+- `search_google` - Google search integration
+- `search_youtube` - YouTube search integration
 
-// Editor.tsx (Presenter - pure component)
-export function Editor({ note, onSave }) {
-  const [content, setContent] = useState(note.content)
-  // ...
-  return <BlockNoteView editor={editor} />
-}
-```
+**review-website** (Web Scraping):
+- `Convert to markdown` - Extract web content
+- Analyze websites and documentation
 
-**Custom Hooks:**
-```tsx
-// useAutoSave.ts
-export function useAutoSave(value, onSave, delay = 2000) {
-  const debouncedValue = useDebounce(value, delay)
+**VidCap** (Video Analysis):
+- `getCaption` - Extract video transcripts
+- Analyze technical tutorials
 
-  useEffect(() => {
-    onSave(debouncedValue)
-  }, [debouncedValue])
-}
+**eyes** (Visual Analysis):
+- Describe images, videos, documents
+- UI/UX analysis from screenshots
 
-// Usage
-useAutoSave(content, handleSave, 2000)
-```
+**gemini-image-gen & imagemagick skills** (Generation & Processing):
+- Generate images, videos, and documents via gemini-image-gen skills
+- Perform design asset creation and edits with imagemagick skill workflows
 
-### Styling Architecture
+**brain** (Advanced Reasoning):
+- Sequential thinking
+- Code analysis
+- Debugging assistance
 
-**TailwindCSS + CSS Variables:**
-```css
-/* globals.css */
-:root {
-  --background: hsl(0, 0%, 98%);
-  --foreground: hsl(0, 0%, 12%);
-  --accent: hsl(199, 89%, 48%);
-  /* ... all design tokens */
-}
+#### 6.2 External Service Integration
 
-.dark {
-  --background: hsl(0, 0%, 10%);
-  --foreground: hsl(0, 0%, 89%);
-  --accent: hsl(199, 80%, 52%);
-  /* ... dark theme overrides */
-}
-```
+**GitHub**:
+- Actions (CI/CD automation)
+- Releases (semantic versioning)
+- Issues and PRs (project management)
 
-**Utility-First Approach:**
-- Use Tailwind classes directly in components
-- Custom classes for reusable patterns
-- Design tokens in CSS variables (theme-agnostic)
-- shadcn/ui for pre-built accessible components
+**Discord**:
+- Webhook notifications
+- Project updates
+- Team communication
 
----
+**NPM** (Optional):
+- Package publishing
+- Version management
 
-## Data Flow
+### 7. Data Layer
 
-### CRUD Operations
+#### 7.1 File-Based Storage
 
-**Create Note Flow:**
+**Configuration Data**:
+- `.claude/` - Claude Code config
+- `.opencode/` - OpenCode config
+- `.gitignore` - Git exclusions
+- `package.json` - Node.js config
+- `.releaserc.json` - Release config
+
+**Runtime Data**:
+- `plans/` - Implementation plans
+- `plans/reports/` - Agent communication
+- `plans/research/` - Research reports
+- `docs/` - Project documentation
+- `repomix-output.xml` - Codebase compaction
+
+**Version Control**:
+- `.git/` - Git repository
+- `CHANGELOG.md` - Version history
+- Git tags - Release versions
+
+#### 7.2 Data Flow
 
 ```
-User clicks "New Page"
-  │
-  ▼
-Sidebar component
-  │ handleNewNote()
-  ▼
-noteStore.createNote(workspaceId, title, content)
-  │
-  ▼
-Wails binding: CreateNote(workspaceId, title, content)
-  │ (IPC: Frontend → Backend)
-  ▼
-app.go: CreateNote(...)
-  │
-  ▼
-database.CreateNote(...)
-  │
-  ├─► Generate UUID
-  ├─► Set timestamps
-  ├─► INSERT INTO notes
-  └─► Return Note struct
-      │
-      ▼
-   (IPC: Backend → Frontend)
-      │
-      ▼
-noteStore updates state
-  │ notes = [...notes, newNote]
-  │ activeNote = newNote
-  ▼
-React re-renders
-  │ Sidebar shows new note
-  └─► Editor opens with blank content
+User Input
+    ↓
+Command Parsing
+    ↓
+Agent Execution
+    ↓
+File System (Reports/Plans)
+    ↓
+Agent Reading
+    ↓
+Processing
+    ↓
+File System (Updated Docs/Code)
+    ↓
+Version Control (Git)
+    ↓
+Remote Repository (GitHub)
 ```
 
-**Update Note Flow (Auto-Save):**
+## Component Interactions
+
+### Typical Interaction Flow: Feature Implementation
 
 ```
-User types in editor
-  │
-  ▼
-Editor.tsx: setContent(newContent)
-  │
-  ▼
-useAutoSave hook
-  │ Debounce 2s
-  ▼
-handleSave(content)
-  │
-  ▼
-noteStore.updateNote(id, title, content)
-  │
-  ▼
-Wails binding: UpdateNote(id, title, content)
-  │ (IPC)
-  ▼
-database.UpdateNote(...)
-  │
-  ├─► UPDATE notes SET content = ?, updated_at = ? WHERE id = ?
-  └─► Return nil or error
-      │
-      ▼
-   (IPC: Backend → Frontend)
-      │
-      ▼
-noteStore updates state
-  │ notes = notes.map(n => n.id === id ? {...n, content, updatedAt} : n)
-  ▼
-Show "Saved" indicator
+┌─────────────┐
+│    User     │
+└──────┬──────┘
+       │ /cook "add auth"
+       ↓
+┌─────────────────────┐
+│   Command Parser    │
+└──────┬──────────────┘
+       │ Parse command + args
+       ↓
+┌─────────────────────┐
+│  Planner Agent      │
+└──────┬──────────────┘
+       │ Spawn researchers
+       ↓
+┌──────────────────────────────────┐
+│  Researchers (Parallel)          │
+│  - Auth strategies               │
+│  - Security best practices       │
+│  - Integration patterns          │
+└──────┬───────────────────────────┘
+       │ Reports to planner
+       ↓
+┌─────────────────────┐
+│  Planner Agent      │
+└──────┬──────────────┘
+       │ Create plan
+       │ Save to ./plans/
+       ↓
+┌─────────────────────┐
+│   Main Agent        │
+└──────┬──────────────┘
+       │ Read plan
+       │ Implement code
+       ↓
+┌─────────────────────┐
+│  Tester Agent       │
+└──────┬──────────────┘
+       │ Write & run tests
+       ↓
+┌─────────────────────┐
+│ Code Reviewer Agent │
+└──────┬──────────────┘
+       │ Review quality
+       ↓
+┌─────────────────────┐
+│ Docs Manager Agent  │
+└──────┬──────────────┘
+       │ Update docs
+       ↓
+┌─────────────────────┐
+│  Git Manager Agent  │
+└──────┬──────────────┘
+       │ Commit & push
+       ↓
+┌─────────────────────┐
+│   User (Result)     │
+└─────────────────────┘
 ```
 
-### Search Flow (Phase 3)
+### Agent Communication Example
 
 ```
-User presses ⌘K
-  │
-  ▼
-SearchModal opens
-  │
-  ▼
-User types query: "react"
-  │ onChange debounce 100ms
-  ▼
-Wails binding: SearchNotes(workspaceId, query)
-  │ (IPC)
-  ▼
-database.SearchNotes(...)
-  │
-  ├─► SELECT * FROM notes_fts WHERE notes_fts MATCH ?
-  └─► Return matched notes with snippets
-      │
-      ▼
-   (IPC: Backend → Frontend)
-      │
-      ▼
-SearchModal displays results
-  │
-  ▼
-User selects result
-  │
-  ▼
-noteStore.setActiveNote(selectedNote)
-  │
-  └─► Editor opens note
+plans/reports/251026-from-planner-to-main-auth-plan-report.md
+    ↓
+Main Agent reads plan
+    ↓
+Implements features
+    ↓
+plans/reports/251026-from-main-to-tester-auth-impl-report.md
+    ↓
+Tester reads implementation details
+    ↓
+Runs tests
+    ↓
+plans/reports/251026-from-tester-to-main-test-results-report.md
 ```
 
----
+## Technology Stack
 
-## Sync Architecture
+### Core Technologies
 
-### Local-First Sync (Phase 5)
+**Runtime Environment**:
+- Node.js >= 18.0.0
+- Bash scripting (hooks)
 
-**Architecture:**
-```
-┌──────────────────────────────────────────────────────────────┐
-│                      LOCAL DATABASE                          │
-│                   (Source of Truth)                          │
-│                                                               │
-│  ┌────────────────────────────────────────────────────┐     │
-│  │  Notes Table                                        │     │
-│  │  - id, title, content, updated_at, drive_file_id  │     │
-│  └────────────────────────────────────────────────────┘     │
-│                           │                                   │
-│                           │ On create/update/delete          │
-│                           ▼                                   │
-│  ┌────────────────────────────────────────────────────┐     │
-│  │  Sync Queue                                         │     │
-│  │  - id, note_id, operation (create/update/delete)  │     │
-│  │  - status, retry_count, error                      │     │
-│  └────────────────────────────────────────────────────┘     │
-└──────────────────────────────────────────────────────────────┘
-                           │
-                           │ Background worker (5min interval)
-                           ▼
-        ┌──────────────────────────────────────┐
-        │      SYNC QUEUE PROCESSOR            │
-        │                                       │
-        │  1. Fetch batch (10 items)           │
-        │  2. For each item:                   │
-        │     - Upload/Download/Delete         │
-        │     - Update drive_file_id           │
-        │     - Remove from queue if success   │
-        │     - Increment retry if error       │
-        └──────────────────────────────────────┘
-                           │
-                           │ HTTPS
-                           ▼
-        ┌──────────────────────────────────────┐
-        │         GOOGLE DRIVE API             │
-        │                                       │
-        │  /Fuknotion/                         │
-        │  ├── workspace-1/                    │
-        │  │   ├── note-1.md                   │
-        │  │   └── note-2.md                   │
-        │  └── workspace-2/                    │
-        │      └── note-3.md                   │
-        └──────────────────────────────────────┘
-```
+**AI Platforms**:
+- Anthropic Claude (Sonnet 4, Opus 4)
+- Google Gemini 2.5 Flash
+- OpenRouter (multi-model support)
+- Grok Code
 
-### Sync Operations
+**Development Tools**:
+- Semantic Release (versioning)
+- Commitlint (commit standards)
+- Husky (git hooks)
+- Repomix (codebase compaction)
 
-**Create Note:**
-1. User creates note → saved to SQLite
-2. Queued for upload: `INSERT INTO sync_queue (note_id, operation='create')`
-3. Background worker uploads markdown to Drive
-4. Store `drive_file_id` in notes table
-5. Remove from sync_queue
+**CI/CD**:
+- GitHub Actions
+- Conventional Commits
+- Semantic Versioning
 
-**Update Note:**
-1. User edits note → saved to SQLite (updated_at timestamp)
-2. Queued for upload: `INSERT INTO sync_queue (note_id, operation='update')`
-3. Worker compares timestamps:
-   - Local newer → upload
-   - Remote newer → download and merge
-   - Both changed → three-way merge
-4. Remove from queue if success
+### MCP Tools Ecosystem
 
-**Delete Note:**
-1. User deletes note → soft delete (is_deleted=1)
-2. Queued: `INSERT INTO sync_queue (note_id, operation='delete')`
-3. Worker deletes file from Drive
-4. Remove from queue
+**Sequential Thinking**: Problem decomposition
+**Context7**: Documentation access
+**SearchAPI**: Web research
+**Review-Website**: Content extraction
+**VidCap**: Video analysis
+**Eyes**: Visual understanding
+**gemini-image-gen & imagemagick skills**: Content generation and processing
+**Brain**: Advanced reasoning
 
-### Conflict Resolution
+## Data Flow Diagrams
 
-**Three-Way Merge:**
-```
-Conflict detected (local updated_at != remote modifiedTime)
-  │
-  ├─► Fetch 3 versions:
-  │   - Local (current state)
-  │   - Remote (Drive state)
-  │   - Base (last synced state from metadata)
-  │
-  ├─► Line-based diff algorithm
-  │
-  ├─► Merge outcome:
-  │   ├─► Clean merge → auto-resolve
-  │   └─► Conflict markers → show UI
-  │
-  └─► User resolves manually if needed
-```
-
-**Conflict UI (Phase 5):**
-```tsx
-<ConflictModal>
-  <DiffViewer
-    local={localContent}
-    remote={remoteContent}
-    base={baseContent}
-  />
-  <Actions>
-    <Button onClick={acceptLocal}>Keep Local</Button>
-    <Button onClick={acceptRemote}>Keep Remote</Button>
-    <Button onClick={merge}>Merge Both</Button>
-  </Actions>
-</ConflictModal>
-```
-
-### Sync States
-
-**Sync Status Indicator:**
-- ✅ Synced - All changes uploaded
-- 🔄 Syncing - Upload/download in progress
-- ⏸️ Paused - Offline or rate limited
-- ❌ Error - Sync failed (show details)
-
-**Error Handling:**
-- Exponential backoff (1s, 2s, 4s, 8s, 16s)
-- Max 5 retries per item
-- After 5 failures, mark as error and notify user
-- User can manually retry from settings
-
----
-
-## Database Schema
-
-### Entity Relationship Diagram
+### Command Execution Flow
 
 ```
-┌──────────────────┐
-│   workspaces     │
-│ ───────────────  │
-│ id (PK)          │◄────┐
-│ name             │     │
-│ created_at       │     │
-│ updated_at       │     │
-└──────────────────┘     │
-                         │
-                         │ workspace_id (FK)
-                         │
-┌──────────────────┐     │
-│      notes       │     │
-│ ───────────────  │     │
-│ id (PK)          │     │
-│ workspace_id     ├─────┘
-│ title            │
-│ content          │
-│ parent_id (FK)   ├───┐ (self-referential)
-│ is_favorite      │   │
-│ is_deleted       │   │
-│ created_at       │   │
-│ updated_at       │   │
-│ deleted_at       │   │
-│ drive_file_id    │   │
-└──────────────────┘   │
-         ▲             │
-         └─────────────┘
-
-┌──────────────────┐
-│     members      │
-│ ───────────────  │
-│ id (PK)          │
-│ workspace_id (FK)├───────► workspaces
-│ email            │
-│ role             │
-│ created_at       │
-└──────────────────┘
-
-┌──────────────────┐
-│  sync_status     │
-│ ───────────────  │
-│ id (PK)          │
-│ note_id (FK)     ├───────► notes
-│ status           │
-│ error            │
-│ updated_at       │
-└──────────────────┘
+User → CLI → Parser → Command Def → Agent Workflow
+                                         ↓
+                        ┌────────────────┴────────────────┐
+                        ↓                                 ↓
+                Sequential Execution              Parallel Execution
+                        ↓                                 ↓
+                Agent A → Agent B → Agent C    Agent A + Agent B + Agent C
+                        ↓                                 ↓
+                        └─────────────┬───────────────────┘
+                                      ↓
+                              Collect Results
+                                      ↓
+                              Present to User
 ```
 
-### Schema Details
+### File-Based Communication Flow
 
-**workspaces** - Organize notes into isolated containers
-- `id` - UUID primary key
-- `name` - Workspace display name
-- `created_at` - Creation timestamp
-- `updated_at` - Last modification timestamp
-
-**notes** - Store markdown notes
-- `id` - UUID primary key
-- `workspace_id` - FK to workspaces
-- `title` - Note title (can be empty for "Untitled")
-- `content` - Markdown content
-- `parent_id` - FK to notes (self-referential for hierarchy)
-- `is_favorite` - Favorite/starred flag
-- `is_deleted` - Soft delete flag
-- `created_at` - Creation timestamp
-- `updated_at` - Last modification timestamp (for sync)
-- `deleted_at` - Deletion timestamp (nullable)
-- `drive_file_id` - Google Drive file ID (nullable, Phase 5)
-
-**members** - Workspace collaboration (Phase 5)
-- `id` - UUID primary key
-- `workspace_id` - FK to workspaces
-- `email` - User email address
-- `role` - owner, editor, viewer
-- `created_at` - Invitation timestamp
-
-**sync_status** - Track sync queue (Phase 5)
-- `id` - UUID primary key
-- `note_id` - FK to notes
-- `status` - pending, syncing, synced, error
-- `error` - Error message if failed (nullable)
-- `updated_at` - Last sync attempt timestamp
-
-### Indexes
-
-```sql
--- Notes indexes
-CREATE INDEX idx_notes_workspace ON notes(workspace_id);
-CREATE INDEX idx_notes_parent ON notes(parent_id);
-CREATE INDEX idx_notes_deleted ON notes(is_deleted);
-CREATE INDEX idx_notes_favorite ON notes(is_favorite);
-CREATE INDEX idx_notes_updated ON notes(updated_at);
-
--- Members index
-CREATE INDEX idx_members_workspace ON members(workspace_id);
-
--- Sync status index
-CREATE INDEX idx_sync_status_note ON sync_status(note_id);
-
--- Full-text search (Phase 3)
-CREATE VIRTUAL TABLE notes_fts USING fts5(title, content);
+```
+Agent A (Planner)
+    ↓ Writes
+./plans/251026-auth-implementation-plan.md
+    ↓ Reads
+Main Agent
+    ↓ Implements
+Code Changes
+    ↓ Writes
+./plans/reports/251026-from-main-to-tester-impl-report.md
+    ↓ Reads
+Tester Agent
+    ↓ Executes
+Tests
+    ↓ Writes
+./plans/reports/251026-from-tester-to-main-results-report.md
+    ↓ Reads
+Main Agent (next steps)
 ```
 
----
+### Documentation Update Flow
+
+```
+Code Changes
+    ↓
+Docs Manager Triggered
+    ↓
+Check Freshness (< 1 day?)
+    ↓
+┌─────────┴─────────┐
+↓ No (outdated)     ↓ Yes (fresh)
+Run Repomix         Read Existing
+    ↓                   ↓
+Generate Summary        │
+    └────────┬──────────┘
+             ↓
+    Analyze Changes
+             ↓
+    Update Documentation
+    - API docs
+    - Code standards
+    - Architecture
+    - Codebase summary
+             ↓
+    Validate Naming
+             ↓
+    Create Report
+             ↓
+    Save to ./docs/
+```
 
 ## Security Architecture
 
-### Current State (Phase 0-4)
+### Security Layers
 
-**Threat Model:**
-- Local-only app, no network access
-- No authentication required
-- No encryption at rest
-- SQLite database in user home directory
+**Layer 1: Pre-Commit Security**
+- Secret scanning (git-manager agent)
+- Credential detection
+- .gitignore validation
+- Environment file exclusion
 
-**Security Measures:**
-- File permissions: 0755 for directory, 0644 for database
-- SQL injection prevention: parameterized queries
-- Input validation: title/content length limits (future)
+**Layer 2: Code Security**
+- Input validation enforcement
+- SQL injection prevention
+- XSS protection patterns
+- OWASP Top 10 awareness
 
-**Risks:**
-- Database accessible to other processes
-- No protection if device compromised
-- No backup encryption
+**Layer 3: Agent Security**
+- No logging of sensitive data
+- Sanitized error messages
+- Secure credential handling
+- API key protection
 
-### Future State (Phase 5)
+**Layer 4: Communication Security**
+- File system permissions
+- Report sanitization
+- Context isolation
+- Clean handoffs
 
-**OAuth 2.0 with PKCE:**
+### Secret Management
+
+**Environment Variables**:
 ```
-User clicks "Connect Google Drive"
-  │
-  ▼
-Start OAuth flow with PKCE
-  │ code_verifier = random(43 bytes)
-  │ code_challenge = SHA256(code_verifier)
-  ▼
-Open browser with authorization URL
-  │ https://accounts.google.com/o/oauth2/v2/auth
-  │ ?client_id=...&redirect_uri=http://localhost:8080/callback
-  │ &code_challenge=...&code_challenge_method=S256
-  ▼
-User authorizes
-  │
-  ▼
-Redirect to http://localhost:8080/callback?code=...
-  │
-  ▼
-Exchange code for tokens
-  │ POST https://oauth2.googleapis.com/token
-  │ { code, code_verifier, client_id, redirect_uri }
-  ▼
-Store tokens in OS keychain
-  │ macOS: Keychain Services
-  │ Windows: Credential Manager
-  │ Linux: Secret Service API
-  ▼
-Use access_token for Drive API
-  │ Refresh when expired (refresh_token)
+.env (local, gitignored)
+.env.example (template, committed)
 ```
 
-**Token Storage:**
-- macOS: Keychain Services (encrypted)
-- Windows: Credential Manager (DPAPI encrypted)
-- Linux: Secret Service API (encrypted)
-- Never stored in plaintext or localStorage
+**API Keys**:
+- Never hardcoded
+- Environment variable injection
+- Secure storage systems in production
 
-**Optional E2E Encryption (Future):**
-- Encrypt markdown before upload
-- Derive key from user password
-- Metadata (title, timestamps) in plaintext for search
-- Content encrypted with AES-256-GCM
+**Credentials**:
+- Password hashing (bcrypt, argon2)
+- Token-based authentication
+- Secure session management
 
----
+## Scalability Considerations
+
+### Horizontal Scalability
+
+**Parallel Agent Execution**:
+- Independent researchers run simultaneously
+- No shared state between agents
+- File-based coordination
+- Scalable to N agents
+
+**Workflow Parallelization**:
+- Multiple feature branches
+- Concurrent issue resolution
+- Parallel test execution
+- Independent documentation updates
+
+### Vertical Scalability
+
+**Context Management**:
+- Repomix for code compaction
+- Selective context loading
+- Chunked file processing
+- Efficient token usage
+
+**Performance Optimization**:
+- Lazy loading of skills
+- Cached MCP responses
+- Incremental documentation updates
+- Optimized file I/O
 
 ## Deployment Architecture
 
-### Build Process
+### Development Environment
 
-**Development:**
-```bash
-# Start dev server with HMR
-wails dev
-
-# Frontend: Vite dev server (http://localhost:5173)
-# Backend: Go app with live reload
-# Window: WebView2 (Windows), WebKit (macOS)
+```
+Developer Machine
+├── Claude Code CLI / Open Code CLI
+├── .claude/ (configuration)
+├── .opencode/ (configuration)
+├── Git repository
+└── Node.js runtime
 ```
 
-**Production Build:**
-```bash
-# Build for current platform
-wails build
+### CI/CD Pipeline
 
-# Outputs:
-# - Windows: fuknotion.exe + WebView2 runtime
-# - macOS: Fuknotion.app bundle
-# - Linux: fuknotion binary
-
-# Advanced options:
-wails build -clean                 # Clean build
-wails build -upx                   # Compress with UPX
-wails build -webview2 bundled      # Bundle WebView2 (Windows)
-wails build -platform windows/amd64 # Cross-compile
+```
+GitHub Repository
+    ↓ Push to main
+GitHub Actions
+    ↓
+Run Tests
+    ↓
+Semantic Release
+    ├─→ Version Bump
+    ├─→ Changelog Generation
+    ├─→ GitHub Release
+    └─→ (Optional) NPM Publish
 ```
 
-### Distribution
+### Production Usage
 
-**Windows:**
-- Installer: NSIS (.exe installer)
-- Portable: Standalone .exe
-- Package managers: Chocolatey, winget
-- Requirements: Windows 10 1809+ (WebView2)
+```
+User Project
+├── .claude/ (from template)
+├── .opencode/ (from template)
+├── docs/ (generated)
+├── plans/ (generated)
+├── src/ (user code)
+└── tests/ (user tests)
+```
 
-**macOS:**
-- App bundle: Fuknotion.app
-- DMG installer: Drag-and-drop to Applications
-- Package managers: Homebrew Cask
-- Code signing: Apple Developer ID
-- Notarization: Required for Gatekeeper
-- Requirements: macOS 12+ (Intel, Apple Silicon)
+## Monitoring & Observability
 
-**Linux:**
-- AppImage: Portable, no dependencies
-- DEB package: Debian/Ubuntu
-- RPM package: Fedora/RHEL
-- Flatpak: Sandboxed (future)
-- Requirements: Ubuntu 22.04+, Fedora 38+
+### Agent Activity Tracking
 
-### Auto-Update (Future)
+**Logs**:
+- Agent invocations
+- Command executions
+- Workflow progress
+- Error occurrences
 
-**Strategy:**
-- Check for updates on startup
-- Download in background
-- Prompt user to restart
-- Apply update on next launch
+**Reports**:
+- Agent communication files
+- Implementation plans
+- Research findings
+- Test results
 
-**Implementation:**
-- GitHub Releases API for version check
-- Download .zip/.dmg/.exe from releases
-- Verify signature before applying
-- Rollback if update fails
+**Metrics**:
+- Command execution time
+- Agent success rates
+- Test pass/fail ratios
+- Documentation coverage
 
----
+### Quality Metrics
+
+**Code Quality**:
+- Test coverage percentage
+- Type safety compliance
+- Linting pass rate
+- Security scan results
+
+**Process Metrics**:
+- Planning to implementation time
+- Code review turnaround
+- Documentation freshness
+- Commit message compliance
+
+## Failure Handling
+
+### Error Recovery Strategies
+
+**Agent Failures**:
+- Graceful degradation
+- Error reporting to user
+- Rollback mechanisms
+- Retry logic for transient errors
+
+**Workflow Failures**:
+- Checkpoint saving
+- Partial progress preservation
+- Clear failure messages
+- Recovery suggestions
+
+**Communication Failures**:
+- File write retries
+- Report validation
+- Missing report detection
+- Timeout handling
+
+## Extension Points
+
+### Adding New Agents
+
+1. Create agent definition file: `.claude/agents/my-agent.md`
+2. Define YAML frontmatter (name, description, mode, model)
+3. Write agent instructions and workflows
+4. Reference in commands or other agents
+
+### Adding New Commands
+
+1. Create command file: `.claude/commands/my-command.md`
+2. Define YAML frontmatter
+3. Write command workflow with agent invocations
+4. Use `$ARGUMENTS` or `$1, $2` for parameters
+
+### Adding New Skills
+
+1. Create skill directory: `.claude/skills/my-skill/`
+2. Write `SKILL.md` with knowledge content
+3. Add references and examples
+4. Reference in agent definitions
+
+### Custom Workflows
+
+1. Define workflow in `.claude/workflows/`
+2. Document orchestration patterns
+3. Specify agent handoffs
+4. Provide examples
 
 ## Performance Considerations
 
-### Backend Performance
+### Optimization Strategies
 
-**Database:**
-- WAL mode: Concurrent reads without blocking writes
-- Indexes: Fast lookups on workspace_id, parent_id, timestamps
-- Connection pooling: Max 1 writer, unlimited readers
-- Query optimization: Avoid N+1 queries, use JOINs
+**Token Efficiency**:
+- Repomix for codebase compaction
+- Selective context inclusion
+- Efficient prompt engineering
+- Response caching where possible
 
-**Memory:**
-- Go binary: ~20MB resident
-- SQLite database: ~1KB per note + content size
-- Total: <100MB for 10,000 notes
+**Execution Speed**:
+- Parallel agent spawning
+- Async file operations
+- Lazy skill loading
+- Minimal context switching
 
-### Frontend Performance
+**Resource Usage**:
+- File system efficiency
+- Memory management for large files
+- Cleanup of temporary files
+- Optimized git operations
 
-**Initial Load:**
-- Bundle size: <500KB gzipped (target)
-- Vite code splitting: Lazy load editor, settings
-- Time to interactive: <2s on cold start
+## Future Architecture Evolution
 
-**Rendering:**
-- BlockNote: Virtual scrolling for large documents (1000+ blocks)
-- React.memo: Prevent unnecessary re-renders
-- Zustand: Selective subscription (only re-render on relevant state change)
+### Planned Enhancements
 
-**Auto-Save:**
-- Debounce: 2s delay after last keystroke
-- Batch updates: Single database write per save
-- No blocking: Async, doesn't freeze UI
+**Agent Improvements**:
+- Visual workflow builder for agent orchestration
+- Custom agent creator with UI
+- Agent marketplace for community contributions
+- Real-time agent communication (beyond files)
 
-### Scalability Limits
+**Scalability Enhancements**:
+- Distributed agent execution
+- Cloud-based agent orchestration
+- Multi-repository support
+- Large-scale project handling
 
-**Current Design:**
-- Max notes per workspace: 100,000 (theoretical)
-- Realistic limit: 10,000 notes (UX concern, not technical)
-- Max blocks per note: 10,000 (BlockNote limitation)
-- Database size: ~10MB per 10,000 notes (avg 1KB each)
+**Integration Expansions**:
+- Additional AI platforms
+- More MCP servers
+- Custom integration framework
+- Enterprise service connectors
 
-**Bottlenecks:**
-- SQLite FTS5 search slows at >50,000 notes
-- BlockNote virtual scrolling required at >1,000 blocks
-- Google Drive sync slow for initial download (10,000 notes = ~30min)
+## References
 
----
+### Internal Documentation
+- [Project Overview PDR](./project-overview-pdr.md)
+- [Codebase Summary](./codebase-summary.md)
+- [Code Standards](./code-standards.md)
 
-## Disaster Recovery
+### External Resources
+- [Claude Code Documentation](https://docs.claude.com/)
+- [Open Code Documentation](https://opencode.ai/docs)
+- [MCP Documentation](https://modelcontextprotocol.io/)
+- [Semantic Versioning](https://semver.org/)
 
-### Backup Strategy
+## Unresolved Questions
 
-**Automatic Backups:**
-- Database file: `~/.fuknotion/fuknotion.db`
-- WAL file: `~/.fuknotion/fuknotion.db-wal`
-- SHM file: `~/.fuknotion/fuknotion.db-shm`
-
-**User-Initiated Export:**
-- Database export: Copy .db file to safe location
-- Markdown export: Batch export all notes to .md files
-- JSON export: Structured backup with metadata
-
-**Google Drive Sync:**
-- Acts as automatic backup (if enabled)
-- Not a versioned backup (overwrites on conflict)
-
-### Recovery Procedures
-
-**Corrupted Database:**
-1. Close app
-2. Copy `fuknotion.db-wal` and `fuknotion.db-shm` to backup location
-3. Run SQLite integrity check: `PRAGMA integrity_check`
-4. If corrupted, restore from backup or Drive sync
-
-**Accidental Deletion:**
-1. Check trash (soft delete UI)
-2. Restore from trash within 30 days
-3. If hard deleted, restore from Drive sync
-
-**Sync Conflicts:**
-1. Automatic three-way merge
-2. If merge fails, show conflict UI
-3. User manually resolves (keep local, keep remote, or merge)
-
----
-
-## Monitoring & Logging
-
-### Application Logs
-
-**Log Levels:**
-- DEBUG: Development-only, verbose
-- INFO: Normal operations (app start, note created)
-- WARN: Recoverable errors (sync retry, slow query)
-- ERROR: Unrecoverable errors (database corruption, crash)
-
-**Log Location:**
-- Development: stdout/stderr
-- Production: `~/.fuknotion/logs/fuknotion.log`
-- Rotation: Daily, keep 7 days
-
-**What to Log:**
-- App lifecycle events (startup, shutdown)
-- Database operations (slow queries >100ms)
-- Sync operations (upload, download, conflicts)
-- Errors with stack traces
-
-### Error Tracking (Future)
-
-**Sentry Integration:**
-- Capture frontend errors (React error boundaries)
-- Capture backend errors (Go panic recovery)
-- User opt-in for telemetry
-- No PII (personally identifiable information) logged
-
----
-
-## Appendices
-
-### Technology Choices Rationale
-
-**Wails vs Electron:**
-- Smaller binary (10MB vs 100MB)
-- Less memory usage (50MB vs 200MB)
-- Native OS integration
-- Go backend (fast, simple)
-- Cons: Smaller ecosystem, newer project
-
-**SQLite vs PostgreSQL:**
-- Embedded (no server process)
-- Zero configuration
-- Cross-platform
-- Fast for single-user workloads
-- Cons: No multi-user concurrency (not needed)
-
-**BlockNote vs TipTap vs Slate:**
-- BlockNote: Batteries-included, Notion-like out-of-box
-- TipTap: More flexible, more setup
-- Slate: Low-level, complex
-- Decision: BlockNote for MVP, can switch later
-
-**Zustand vs Redux vs Context:**
-- Zustand: Simplest, least boilerplate
-- Redux: Overkill for this app size
-- Context: Re-render performance issues
-- Decision: Zustand for simplicity + performance
-
-### Future Architecture Improvements
-
-**Phase 7+ (Post-MVP):**
-- Real-time collaboration (CRDT with Yjs)
-- E2E encryption (libsodium)
-- Plugin system (WebAssembly)
-- Mobile apps (React Native with shared API)
-- Web version (Wails backend + web frontend)
-
----
-
-**Document Version:** 1.0
-**Last Updated:** 2025-10-29
-**Status:** Phase 0 Complete
-**Next Phase:** Phase 1 (Core UI Infrastructure)
+1. **Real-Time Collaboration**: How to handle multiple developers using agents simultaneously on same codebase?
+2. **Agent State Management**: Should agents maintain state between invocations beyond file system?
+3. **Distributed Execution**: Architecture for running agents across multiple machines?
+4. **Performance Benchmarking**: What are acceptable latency thresholds for different operation types?
