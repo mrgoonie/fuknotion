@@ -61,8 +61,9 @@ export function OnboardingStep1({ onSkip }: OnboardingStep1Props) {
         disabled={isAuthenticating}
         className={cn(
           "w-full max-w-md px-6 py-3 rounded-lg font-medium",
-          "bg-white text-foreground border-2 border-border",
-          "hover:bg-surface-elevated hover:shadow-md",
+          "bg-white text-gray-700 border-2 border-border",
+          "dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700",
+          "hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md",
           "active:scale-[0.98]",
           "transition-all duration-200",
           "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2",

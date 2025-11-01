@@ -1,0 +1,126 @@
+/* BlockNote Editor Dark Mode Overrides */
+/* Force dark mode styling for BlockNote editor components in dark theme */
+
+.dark .blocknote-editor {
+  /* Main editor container */
+  --bn-colors-editor-background: hsl(222.2, 84%, 4.9%);
+  --bn-colors-editor-text: hsl(210, 40%, 98%);
+
+  /* Menu backgrounds */
+  --bn-colors-menu-background: hsl(217.2, 32.6%, 17.5%);
+  --bn-colors-menu-text: hsl(210, 40%, 98%);
+
+  /* Tooltips */
+  --bn-colors-tooltip-background: hsl(217.2, 32.6%, 17.5%);
+  --bn-colors-tooltip-text: hsl(210, 40%, 98%);
+
+  /* Highlights */
+  --bn-colors-highlights-gray-background: hsl(217.2, 32.6%, 17.5%);
+  --bn-colors-highlights-gray-text: hsl(210, 40%, 98%);
+}
+
+/* Force dark backgrounds for Mantine components used by BlockNote */
+.dark .mantine-Menu-dropdown,
+.dark .mantine-Popover-dropdown {
+  background-color: hsl(217.2, 32.6%, 17.5%) !important;
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+  color: hsl(210, 40%, 98%) !important;
+}
+
+.dark .mantine-Menu-item {
+  color: hsl(210, 40%, 98%) !important;
+}
+
+.dark .mantine-Menu-item:hover {
+  background-color: hsl(217.2, 32.6%, 22%) !important;
+}
+
+.dark .mantine-Menu-label {
+  color: hsl(215, 20.2%, 65.1%) !important;
+}
+
+.dark .mantine-Menu-divider {
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+}
+
+/* Slash menu (command palette) */
+.dark .bn-slash-menu {
+  background-color: hsl(217.2, 32.6%, 17.5%) !important;
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+}
+
+.dark .bn-slash-menu-item {
+  color: hsl(210, 40%, 98%) !important;
+}
+
+.dark .bn-slash-menu-item:hover,
+.dark .bn-slash-menu-item[data-hovered] {
+  background-color: hsl(217.2, 32.6%, 22%) !important;
+}
+
+.dark .bn-slash-menu-label {
+  color: hsl(215, 20.2%, 65.1%) !important;
+}
+
+/* Formatting toolbar */
+.dark .bn-formatting-toolbar {
+  background-color: hsl(217.2, 32.6%, 17.5%) !important;
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+}
+
+.dark .bn-toolbar-button {
+  color: hsl(210, 40%, 98%) !important;
+}
+
+.dark .bn-toolbar-button:hover {
+  background-color: hsl(217.2, 32.6%, 22%) !important;
+}
+
+/* Link toolbar */
+.dark .bn-link-toolbar {
+  background-color: hsl(217.2, 32.6%, 17.5%) !important;
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+}
+
+.dark .bn-link-toolbar input {
+  background-color: hsl(217.2, 32.6%, 14%) !important;
+  border-color: hsl(217.2, 32.6%, 25%) !important;
+  color: hsl(210, 40%, 98%) !important;
+}
+
+/* Side menu */
+.dark .bn-side-menu {
+  color: hsl(210, 40%, 98%) !important;
+}
+
+.dark .bn-side-menu-button:hover {
+  background-color: hsl(217.2, 32.6%, 22%) !important;
+}
+
+/* Drag handle */
+.dark .bn-drag-handle {
+  color: hsl(215, 20.2%, 65.1%) !important;
+}
+
+.dark .bn-drag-handle:hover {
+  background-color: hsl(217.2, 32.6%, 22%) !important;
+}
+
+/* Fix text alignment - force left alignment */
+.blocknote-editor .ProseMirror {
+  text-align: left !important;
+}
+
+.blocknote-editor .bn-block-content {
+  text-align: left !important;
+}
+
+.blocknote-editor p,
+.blocknote-editor h1,
+.blocknote-editor h2,
+.blocknote-editor h3,
+.blocknote-editor h4,
+.blocknote-editor h5,
+.blocknote-editor h6 {
+  text-align: left !important;
+}
