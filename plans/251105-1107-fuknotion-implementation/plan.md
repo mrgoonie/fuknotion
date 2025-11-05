@@ -74,8 +74,8 @@ Fuknotion is offline-first desktop note app with Notion-like editor, Google Driv
 - [x] Phase 04: Local database ✅ COMPLETE + REVIEWED (251105)
 - [x] Phase 05: Markdown storage ✅ COMPLETE + REVIEWED (251105)
 - [x] Phase 06: Text editor ✅ COMPLETE + REVIEWED (251105) - All critical issues resolved
-- [ ] Phase 07: Left sidebar (IN PROGRESS)
-- [ ] Phase 08: Right sidebar
+- [x] Phase 07: Left sidebar ✅ COMPLETE + REVIEWED (251105)
+- [ ] Phase 08: Right sidebar (STARTING)
 - [ ] Phase 09: Tabs
 - [ ] Phase 10: Search
 - [ ] Phase 11: Themes

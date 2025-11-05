@@ -44,19 +44,55 @@ Right sidebar (collapsed by default) with note metadata, table of contents from 
 
 ## Todo List
 
-- [ ] Right sidebar component
-- [ ] Metadata panel
-- [ ] TOC generation
-- [ ] Scroll to heading
-- [ ] Toggle visibility
+- [x] Right sidebar component
+- [x] Metadata panel
+- [x] TOC generation
+- [ ] Scroll to heading (deferred - requires editor ref)
+- [x] Toggle visibility
+
+## Implementation Status
+
+**Status:** Complete with issues
+**Date:** 2025-11-05
+**Review:** See `reports/251105-code-reviewer-phase08-report.md`
+
+### Completed
+- Right sidebar with collapse/expand (default collapsed)
+- Metadata panel showing created/modified dates, word count, folder, favorite
+- TOC panel with heading extraction and active tracking
+- Layout integration with left sidebar
+
+### Issues Found (3 High, 3 Medium, 2 Low)
+**High Priority:**
+1. Date parsing needs validation (`isNaN(date.getTime())`)
+2. Word count includes markdown syntax (needs stripping)
+3. Heading regex missing edge cases (no space, trailing hashes, code blocks)
+
+**Medium Priority:**
+4. Folder shows ID instead of name
+5. Console.log in production code (TOCPanel.tsx:42)
+6. React key using redundant index
+
+**Recommended:** Apply fixes before commit
+
+### Deferred Features
+- Scroll-to-heading functionality (requires editor ref integration)
+- Character count (only word count implemented)
+- Reading time estimate
+- Version history
+- Share button
 
 ## Success Criteria
 
-- Sidebar collapses/expands
-- Metadata accurate
-- TOC updates on edit
-- Click scrolls correctly
+- [x] Sidebar collapses/expands
+- [~] Metadata accurate (issues with date validation, word count)
+- [x] TOC updates on edit (via useMemo)
+- [ ] Click scrolls correctly (deferred)
 
 ## Next Steps
 
-Phase 09: Tab Management
+1. Apply high-priority fixes (date, word count, heading regex)
+2. Remove console.log and fix React key
+3. Test edge cases (invalid dates, markdown syntax, code blocks)
+4. Commit Phase 08 implementation
+5. Proceed to Phase 09: Tab Management
