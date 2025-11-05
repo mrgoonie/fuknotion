@@ -1,12 +1,12 @@
 # System Architecture
 
 **Last Updated:** 2025-11-05
-**Phase:** 01 - Project Setup & Scaffolding (Complete)
-**Version:** 0.1.0
+**Phase:** 04-05 - SQLite Database & Markdown Storage (Complete)
+**Version:** 0.3.0
 
 ## Overview
 
-Fuknotion uses Wails v2 hybrid architecture: React frontend communicates with Go backend via IPC bridge. Frontend runs in WebView, backend runs as native process. All data stored locally with planned Google Drive sync.
+Fuknotion uses Wails v2 hybrid architecture: React frontend communicates with Go backend via IPC bridge. Frontend runs in WebView, backend runs as native process. Data stored in SQLite databases + markdown files with YAML frontmatter. Google Drive sync planned.
 
 ## Architecture Diagram
 
@@ -292,17 +292,62 @@ Future phases will use Wails runtime events:
 - Resolve alias: `@` → `./src`
 - Build: default Rollup options (no manual chunks)
 
-## Planned Architecture (Future Phases)
+## Implemented Architecture (Phases 04-05)
 
-### Database Layer (Phase 02)
+### Database Layer (Phase 04) ✅
 ```
 backend/internal/database/
-├── sqlite.go         # SQLite connection management
-├── migrations.go     # Schema migrations
-└── queries.go        # SQL queries
+├── database.go       # SQLite wrapper, connection management
+├── database_test.go  # Tests (15 tests, 67.7% coverage)
+└── schema.sql        # Schema definitions
 ```
 
-### Authentication Layer (Phase 03)
+**Key Features:**
+- Two-database pattern: user.db (global) + workspace.db (per-workspace)
+- Foreign keys enabled globally
+- Parameterized queries (SQL injection prevention)
+- Indexes on foreign keys and common queries
+- Constraint enforcement (role CHECK constraint)
+
+**Schema:**
+- `user.db`: user, workspaces tables
+- `workspace.db`: notes, folders, members tables
+
+### File Storage Layer (Phase 05) ✅
+```
+backend/internal/filesystem/
+└── service.go        # File operations with path validation
+
+backend/internal/note/
+├── parser.go         # YAML frontmatter parser/serializer
+├── parser_test.go    # Parser tests (5 tests)
+├── service.go        # Note CRUD operations
+└── service_test.go   # Service tests (7 tests, 69.7% coverage)
+```
+
+**Key Features:**
+- Markdown files with YAML frontmatter
+- Path validation (directory traversal prevention)
+- File permissions: 0600 (files), 0700 (directories)
+- UUID-based filenames: `notes/{id}.md`
+- Atomic operations (DB + file)
+
+**Storage Structure:**
+```
+~/.fuknotion/
+├── user.db
+└── workspaces/{workspace-id}/
+    ├── workspace.db
+    └── notes/{note-id}.md
+```
+
+### Data Models ✅
+```
+backend/internal/models/
+└── note.go           # Note, Workspace, Folder structs
+```
+
+### Authentication Layer (Future Phase 09)
 ```
 backend/internal/auth/
 ├── oauth.go          # Google/GitHub OAuth
@@ -310,7 +355,7 @@ backend/internal/auth/
 └── tokens.go         # JWT/refresh tokens
 ```
 
-### Sync Layer (Phase 04)
+### Sync Layer (Future Phase 10+)
 ```
 backend/internal/sync/
 ├── gdrive.go         # Google Drive API client
@@ -318,12 +363,220 @@ backend/internal/sync/
 └── conflict.go       # Conflict resolution
 ```
 
-### Frontend State Management (Phase 05+)
+### Frontend State Management (Partial) ✅
 ```
 frontend/src/stores/
-├── userStore.ts      # User profile state
-├── workspaceStore.ts # Workspaces list
-└── editorStore.ts    # Current note/editor
+├── appStore.ts       # App-wide state (Zustand)
+└── uiStore.ts        # UI state management
+
+frontend/src/hooks/
+├── useNote.ts        # Note management hook
+└── useWorkspace.ts   # Workspace management hook
+```
+
+## Database Schema (Phase 04)
+
+### user.db - Global User Data
+
+```sql
+-- User profile (single row)
+CREATE TABLE user (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT,
+    avatar_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workspaces list
+CREATE TABLE workspaces (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL UNIQUE,                 -- Filesystem path to workspace
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### workspace.db - Per-Workspace Data
+
+```sql
+-- Notes metadata
+CREATE TABLE notes (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    folder_id TEXT,                            -- NULL for root notes
+    file_path TEXT NOT NULL UNIQUE,            -- Relative path: notes/{id}.md
+    is_favorite BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL
+);
+
+-- Folders hierarchy
+CREATE TABLE folders (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    parent_id TEXT,                            -- NULL for root folders
+    position INTEGER DEFAULT 0,                -- Sort order
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
+);
+
+-- Workspace members (collaboration)
+CREATE TABLE members (
+    user_id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('owner', 'editor', 'viewer')),
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Performance indexes
+CREATE INDEX idx_notes_folder ON notes(folder_id);
+CREATE INDEX idx_notes_favorite ON notes(is_favorite);
+CREATE INDEX idx_notes_updated ON notes(updated_at DESC);
+CREATE INDEX idx_folders_parent ON folders(parent_id);
+CREATE INDEX idx_members_email ON members(email);
+```
+
+## File Storage Format (Phase 05)
+
+### Markdown File Structure
+
+**File Path:** `~/.fuknotion/workspaces/{workspace-id}/notes/{note-id}.md`
+
+**File Content:**
+```markdown
+---
+id: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+title: "Note Title"
+created: 2025-11-05T10:30:00Z
+modified: 2025-11-05T15:45:00Z
+folder_id: "folder-uuid"                       # Optional
+is_favorite: false
+tags: ["tag1", "tag2"]                         # Optional
+---
+# Note content in markdown
+
+This is the actual note content that users edit.
+BlockNote editor will read/write this section.
+```
+
+### YAML Frontmatter Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | Yes | UUID (matches database) |
+| `title` | string | Yes | Note title |
+| `created` | timestamp | Yes | Creation time (RFC3339) |
+| `modified` | timestamp | Yes | Last modified time |
+| `folder_id` | string | No | Parent folder UUID |
+| `is_favorite` | boolean | Yes | Favorite flag |
+| `tags` | array | No | Tag list |
+
+## Data Flow Diagrams
+
+### Note CRUD Operations
+
+#### Create Note
+```
+User Input (title, content, folderID)
+    ↓
+Frontend: useNote.createNote()
+    ↓
+Wails IPC Bridge
+    ↓
+Backend: note.Service.CreateNote()
+    ├─→ Generate UUID
+    ├─→ Create Frontmatter struct
+    ├─→ SerializeNote(fm, content)
+    ├─→ FileSystem.WriteFile("notes/{id}.md")
+    └─→ Database.Exec("INSERT INTO notes...")
+    ↓
+Return Note model
+    ↓
+Frontend: Update Zustand store
+    ↓
+UI: Navigate to editor
+```
+
+#### Read Note
+```
+User Action (select note)
+    ↓
+Frontend: useNote.getNote(id)
+    ↓
+Wails IPC Bridge
+    ↓
+Backend: note.Service.GetNote(id)
+    ├─→ Database.QueryRow("SELECT... WHERE id = ?")
+    ├─→ FileSystem.ReadFile(note.FilePath)
+    └─→ ParseMarkdown(fileContent)
+    ↓
+Return Note with content
+    ↓
+Frontend: Update editor state
+    ↓
+UI: Display note in editor
+```
+
+#### Update Note
+```
+User Edit (title, content)
+    ↓
+Frontend: useNote.updateNote(id, title, content)
+    ↓
+Wails IPC Bridge
+    ↓
+Backend: note.Service.UpdateNote()
+    ├─→ GetNote(id) - fetch existing
+    ├─→ Update Frontmatter (preserve created, update modified)
+    ├─→ SerializeNote(fm, newContent)
+    ├─→ FileSystem.WriteFile(filePath)
+    └─→ Database.Exec("UPDATE notes SET title = ?, updated_at = ?")
+    ↓
+Return success
+    ↓
+Frontend: Update Zustand store
+    ↓
+UI: Reflect changes
+```
+
+#### Delete Note
+```
+User Action (delete note)
+    ↓
+Frontend: useNote.deleteNote(id)
+    ↓
+Wails IPC Bridge
+    ↓
+Backend: note.Service.DeleteNote(id)
+    ├─→ GetNote(id) - get file path
+    ├─→ FileSystem.DeleteFile(filePath)
+    └─→ Database.Exec("DELETE FROM notes WHERE id = ?")
+    ↓
+Return success
+    ↓
+Frontend: Remove from Zustand store
+    ↓
+UI: Update note list
+```
+
+### Foreign Key Cascades
+
+```
+Folder Delete (CASCADE)
+folders.id → folders.parent_id
+    └─→ Child folders deleted recursively
+
+folders.id → notes.folder_id (SET NULL)
+    └─→ Notes moved to root (folder_id = NULL)
+
+Note Delete
+    └─→ File deleted from filesystem
+    └─→ Database record deleted
 ```
 
 ## Development Workflow

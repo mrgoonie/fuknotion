@@ -9,7 +9,7 @@
 
 Fuknotion is offline-first desktop note app with Notion-like editor, Google Drive sync, multi-workspace support. Built with Wails (React frontend, Go backend), BlockNote editor, CR-SQLite for conflict-free sync.
 
-**Overall Progress:** 5.9% (1/17 phases complete)
+**Overall Progress:** 17.6% (3/17 phases complete: 01, 04, 05)
 
 ## Tech Stack
 
@@ -95,7 +95,73 @@ Fuknotion is offline-first desktop note app with Notion-like editor, Google Driv
 - User profile management
 - Session handling
 
-### Phase 04-17: Remaining Phases
+### Phase 04: SQLite Database ✅ COMPLETE
+**Duration:** 2 days
+**Status:** Complete
+**Progress:** 100%
+**Dependencies:** Phase 02 (skipped, implemented directly after Phase 01)
+
+**Deliverables:**
+- ✅ Database wrapper (database/database.go)
+- ✅ InitUserDB with user profile and workspaces tables
+- ✅ InitWorkspaceDB with notes, folders, members tables
+- ✅ Foreign keys enabled globally
+- ✅ Performance indexes created
+- ✅ Members table with role constraints (owner, editor, viewer)
+- ✅ 15 tests created (database_test.go)
+- ✅ Test coverage: 67.7%
+
+**Key Files Created:**
+- backend/internal/database/database.go
+- backend/internal/database/database_test.go
+- backend/internal/database/schema.sql
+
+**Success Metrics:**
+- Database initialization: ✅ Working
+- Foreign keys: ✅ Enabled
+- Indexes: ✅ Created
+- Constraints: ✅ Enforced
+- Tests: ✅ All passing (15/15)
+
+### Phase 05: Markdown Storage ✅ COMPLETE
+**Duration:** 2 days
+**Status:** Complete
+**Progress:** 100%
+**Dependencies:** Phase 04 ✅
+
+**Deliverables:**
+- ✅ YAML frontmatter parser (note/parser.go)
+- ✅ Frontmatter serializer
+- ✅ Note service with full CRUD (note/service.go)
+- ✅ FileSystem service with path validation (filesystem/service.go)
+- ✅ Files stored as {id}.md with frontmatter
+- ✅ NULL handling for optional folder_id
+- ✅ Integration with database layer
+- ✅ 12 tests created (parser, service)
+- ✅ Test coverage: 69.7% (service), ~85% (parser)
+
+**Key Files Created:**
+- backend/internal/filesystem/service.go
+- backend/internal/note/parser.go
+- backend/internal/note/parser_test.go
+- backend/internal/note/service.go
+- backend/internal/note/service_test.go
+- backend/internal/models/note.go
+
+**Success Metrics:**
+- Frontmatter parsing: ✅ Working
+- Note CRUD: ✅ All operations functional
+- File storage: ✅ UUID-based filenames
+- Path validation: ✅ Security checks passing
+- Tests: ✅ All passing (12/12)
+
+**Code Review:**
+- Status: ✅ APPROVED
+- Critical issues: 0
+- High issues: 0
+- Medium issues: 0
+
+### Phase 06-17: Remaining Phases
 **Status:** Pending
 **Progress:** 0%
 
@@ -167,14 +233,23 @@ See `/mnt/d/www/fuknotion/plans/251105-1107-fuknotion-implementation/plan.md` fo
 - Development environment functional
 - Basic Go-React communication verified
 
-### Milestone 2: Core Architecture Complete
+### Milestone 2: Data Layer Complete ✅
+**Date:** 2025-11-05
+**Status:** Achieved
+- Phase 04 complete (SQLite Database)
+- Phase 05 complete (Markdown Storage)
+- Database schema implemented
+- Note CRUD operations functional
+- File storage with path validation
+
+### Milestone 3: Core Architecture Complete
 **Target:** 2025-11-08
 **Status:** Pending
 - Phase 02 complete
 - State management operational
-- File system layer functional
+- Routing functional
 
-### Milestone 3: MVP Feature Complete
+### Milestone 4: MVP Feature Complete
 **Target:** 2025-11-22
 **Status:** Pending
 - Phases 03-09 complete
@@ -197,6 +272,40 @@ See `/mnt/d/www/fuknotion/plans/251105-1107-fuknotion-implementation/plan.md` fo
 - Distribution packages built
 
 ## Changelog
+
+### 2025-11-05 - Phases 04-05 Complete
+
+**Added:**
+- SQLite database layer with two-database pattern
+- Database wrapper with connection management
+- InitUserDB and InitWorkspaceDB functions
+- Foreign keys, indexes, constraints
+- FileSystem service with path validation
+- YAML frontmatter parser and serializer
+- Note service with full CRUD operations
+- Models for Note, Workspace, Folder entities
+- Comprehensive test suite (27 tests)
+- Code review completed and approved
+
+**Technical Details:**
+- Database: SQLite with foreign keys enabled globally
+- Storage: Markdown files with YAML frontmatter
+- File naming: UUID-based ({id}.md)
+- Security: Parameterized queries, path validation
+- Testing: 67.7% database coverage, 69.7% note service coverage
+- NULL handling for optional folder_id
+
+**Database Schema:**
+- user.db: user, workspaces tables
+- workspace.db: notes, folders, members tables
+- Performance indexes on foreign keys and common queries
+- Role constraints in members table (owner, editor, viewer)
+
+**File Storage:**
+- Storage path: ~/.fuknotion/workspaces/{ws}/notes/{id}.md
+- YAML frontmatter with metadata
+- File permissions: 0600 (files), 0700 (directories)
+- Directory traversal prevention
 
 ### 2025-11-05 - Phase 01 Complete
 
@@ -266,14 +375,18 @@ Location: `/mnt/d/www/fuknotion/plans/reports/`
 
 ## Notes
 
-- Phase 01 completed successfully after resolving critical Go compilation issue
-- main.go location corrected to follow Go best practices
-- All success criteria met for Phase 01
-- Ready to proceed with Phase 02 implementation
-- Development environment fully functional
+- Phase 01 completed successfully (2025-11-05)
+- Phases 04-05 completed successfully (2025-11-05)
+- **Note:** Phase 02-03 skipped, implemented Phases 04-05 first
+- Database layer fully functional with 67.7% test coverage
+- Note storage with markdown + YAML frontmatter operational
+- File system security validated (path traversal prevention)
+- Code review approved with no critical/high issues
+- All 27 tests passing (database, parser, service)
+- Ready to proceed with Phase 02 (Core Architecture) or Phase 06 (Workspace Management)
 - No blocking issues
 
 ---
 
 **Report Generated:** 2025-11-05
-**Next Review:** 2025-11-08 (After Phase 02 completion)
+**Next Review:** 2025-11-08 (After next phase completion)

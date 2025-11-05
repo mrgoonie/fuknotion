@@ -52,11 +52,17 @@ func (s *Service) CreateNote(title, content, folderID string) (*models.Note, err
 	}
 
 	// Save metadata to database
+	// Use NULL for empty folder_id to satisfy foreign key constraint
+	var folderIDPtr *string
+	if folderID != "" {
+		folderIDPtr = &folderID
+	}
+
 	query := `
 		INSERT INTO notes (id, title, folder_id, file_path, is_favorite, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
-	_, err = s.db.Exec(query, id, title, folderID, filePath, false, now, now)
+	_, err = s.db.Exec(query, id, title, folderIDPtr, filePath, false, now, now)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert note: %w", err)
 	}

@@ -41,8 +41,17 @@ CREATE TABLE IF NOT EXISTS folders (
     FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS members (
+    user_id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('owner', 'editor', 'viewer')),
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_notes_folder ON notes(folder_id);
 CREATE INDEX IF NOT EXISTS idx_notes_favorite ON notes(is_favorite);
 CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_folders_parent ON folders(parent_id);
+CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
