@@ -1,0 +1,23 @@
+{
+  "name": "fuknotion",
+  "version": "2",
+  "outputfilename": "fuknotion",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Fuknotion Team",
+    "email": "team@fuknotion.com"
+  },
+  "info": {
+    "companyName": "Fuknotion",
+    "productName": "Fuknotion",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright 2025",
+    "comments": "Notion-like note-taking app"
+  },
+  "wailsjsdir": "./frontend",
+  "frontenddir": "./frontend",
+  "main": "./backend/cmd/fuknotion"
+}
