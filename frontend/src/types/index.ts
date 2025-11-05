@@ -10,10 +10,11 @@ export interface Workspace {
 
 export interface Note {
   id: string;
-  workspaceId: string;
   title: string;
+  folderId?: string;
+  filePath: string;
+  isFavorite: boolean;
   content: string;
-  path: string;
   createdAt: string;
   updatedAt: string;
 }

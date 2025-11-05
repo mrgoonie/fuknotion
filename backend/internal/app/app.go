@@ -7,14 +7,19 @@ import (
 	"path/filepath"
 
 	"fuknotion/backend/internal/config"
+	"fuknotion/backend/internal/database"
 	"fuknotion/backend/internal/filesystem"
+	"fuknotion/backend/internal/models"
+	"fuknotion/backend/internal/note"
 )
 
 // App struct
 type App struct {
-	ctx    context.Context
-	fs     *filesystem.FileSystem
-	config *config.Config
+	ctx         context.Context
+	fs          *filesystem.FileSystem
+	config      *config.Config
+	db          *database.Database
+	noteService *note.Service
 }
 
 // NewApp creates a new App application struct
@@ -42,6 +47,19 @@ func (a *App) Startup(ctx context.Context) {
 	}
 	a.fs = fs
 
+	// Initialize workspace database
+	// For now, use a default workspace path. In Phase 07, we'll add workspace management
+	workspacePath := filepath.Join(appDataPath, "workspaces", "default")
+	db, err := database.InitWorkspaceDB(workspacePath)
+	if err != nil {
+		fmt.Printf("Failed to initialize database: %v\n", err)
+		return
+	}
+	a.db = db
+
+	// Initialize note service
+	a.noteService = note.NewService(db, fs)
+
 	// Load configuration
 	configPath := filepath.Join(appDataPath, "config.json")
 	cfg, err := config.LoadConfig(configPath)
@@ -54,6 +72,13 @@ func (a *App) Startup(ctx context.Context) {
 
 // Shutdown is called at application termination
 func (a *App) Shutdown(ctx context.Context) {
+	// Close database
+	if a.db != nil {
+		if err := a.db.Close(); err != nil {
+			fmt.Printf("Failed to close database: %v\n", err)
+		}
+	}
+
 	// Save configuration
 	if a.config != nil {
 		configPath := filepath.Join(a.GetAppDataPath(), "config.json")
@@ -169,4 +194,44 @@ func (a *App) UpdateConfig(key string, value interface{}) error {
 	// Save immediately
 	configPath := filepath.Join(a.GetAppDataPath(), "config.json")
 	return config.SaveConfig(configPath, a.config)
+}
+
+// CreateNote creates a new note
+func (a *App) CreateNote(title, content, folderID string) (*models.Note, error) {
+	if a.noteService == nil {
+		return nil, fmt.Errorf("note service not initialized")
+	}
+	return a.noteService.CreateNote(title, content, folderID)
+}
+
+// GetNote retrieves a note by ID
+func (a *App) GetNote(id string) (*models.Note, error) {
+	if a.noteService == nil {
+		return nil, fmt.Errorf("note service not initialized")
+	}
+	return a.noteService.GetNote(id)
+}
+
+// UpdateNote updates an existing note
+func (a *App) UpdateNote(id, title, content string) error {
+	if a.noteService == nil {
+		return fmt.Errorf("note service not initialized")
+	}
+	return a.noteService.UpdateNote(id, title, content)
+}
+
+// DeleteNote deletes a note
+func (a *App) DeleteNote(id string) error {
+	if a.noteService == nil {
+		return fmt.Errorf("note service not initialized")
+	}
+	return a.noteService.DeleteNote(id)
+}
+
+// ListNotes lists all notes
+func (a *App) ListNotes() ([]*models.Note, error) {
+	if a.noteService == nil {
+		return nil, fmt.Errorf("note service not initialized")
+	}
+	return a.noteService.ListNotes()
 }
