@@ -130,6 +130,28 @@ func InitWorkspaceDB(workspacePath string) (*Database, error) {
 	CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes(updated_at DESC);
 	CREATE INDEX IF NOT EXISTS idx_folders_parent ON folders(parent_id);
 	CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
+
+	-- Full-text search table
+	CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+		note_id UNINDEXED,
+		title,
+		content,
+		tokenize='porter unicode61'
+	);
+
+	-- Triggers to keep FTS in sync with notes table
+	CREATE TRIGGER IF NOT EXISTS notes_ai AFTER INSERT ON notes BEGIN
+		INSERT INTO notes_fts(rowid, note_id, title, content)
+		VALUES (new.rowid, new.id, new.title, '');
+	END;
+
+	CREATE TRIGGER IF NOT EXISTS notes_ad AFTER DELETE ON notes BEGIN
+		DELETE FROM notes_fts WHERE rowid = old.rowid;
+	END;
+
+	CREATE TRIGGER IF NOT EXISTS notes_au AFTER UPDATE ON notes BEGIN
+		UPDATE notes_fts SET title = new.title WHERE rowid = new.rowid;
+	END;
 	`
 
 	if _, err := db.Exec(schema); err != nil {

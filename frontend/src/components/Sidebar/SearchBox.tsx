@@ -1,26 +1,9 @@
-import { useEffect, useRef } from 'react';
-
 interface SearchBoxProps {
   value: string;
   onChange: (value: string) => void;
 }
 
 export function SearchBox({ value, onChange }: SearchBoxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Handle Cmd+K / Ctrl+K hotkey
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   return (
     <div className="relative">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -29,11 +12,10 @@ export function SearchBox({ value, onChange }: SearchBoxProps) {
         </svg>
       </div>
       <input
-        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search notes... (⌘K)"
+        placeholder="Filter notes..."
         className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
       />
       {value && (

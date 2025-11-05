@@ -62,9 +62,17 @@ func (s *Service) CreateNote(title, content, folderID string) (*models.Note, err
 		INSERT INTO notes (id, title, folder_id, file_path, is_favorite, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
-	_, err = s.db.Exec(query, id, title, folderIDPtr, filePath, false, now, now)
+	result, err := s.db.Exec(query, id, title, folderIDPtr, filePath, false, now, now)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert note: %w", err)
+	}
+
+	// Get the rowid for FTS
+	rowid, err := result.LastInsertId()
+	if err == nil {
+		// Update FTS with content
+		ftsQuery := `UPDATE notes_fts SET content = ? WHERE rowid = ?`
+		s.db.Exec(ftsQuery, content, rowid)
 	}
 
 	return &models.Note{
@@ -161,6 +169,10 @@ func (s *Service) UpdateNote(id, title, content string) error {
 		return fmt.Errorf("failed to update note: %w", err)
 	}
 
+	// Update FTS content
+	ftsQuery := `UPDATE notes_fts SET content = ? WHERE note_id = ?`
+	s.db.Exec(ftsQuery, content, id)
+
 	return nil
 }
 
@@ -226,4 +238,72 @@ func (s *Service) ListNotes() ([]*models.Note, error) {
 	}
 
 	return notes, nil
+}
+
+// SearchResult represents a search result with context
+type SearchResult struct {
+	Note    *models.Note
+	Snippet string
+	Rank    float64
+}
+
+// SearchNotes searches for notes using full-text search
+func (s *Service) SearchNotes(query string) ([]*SearchResult, error) {
+	if query == "" {
+		return []*SearchResult{}, nil
+	}
+
+	// Use FTS5 MATCH query with bm25 ranking
+	searchQuery := `
+		SELECT
+			n.id, n.title, n.folder_id, n.file_path, n.is_favorite, n.created_at, n.updated_at,
+			snippet(notes_fts, 2, '<mark>', '</mark>', '...', 32) as snippet,
+			bm25(notes_fts) as rank
+		FROM notes_fts
+		JOIN notes n ON notes_fts.note_id = n.id
+		WHERE notes_fts MATCH ?
+		ORDER BY rank
+		LIMIT 50
+	`
+
+	rows, err := s.db.Query(searchQuery, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search notes: %w", err)
+	}
+	defer rows.Close()
+
+	var results []*SearchResult
+	for rows.Next() {
+		var note models.Note
+		var folderID *string
+		var snippet string
+		var rank float64
+
+		err := rows.Scan(
+			&note.ID,
+			&note.Title,
+			&folderID,
+			&note.FilePath,
+			&note.IsFavorite,
+			&note.CreatedAt,
+			&note.UpdatedAt,
+			&snippet,
+			&rank,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan search result: %w", err)
+		}
+
+		if folderID != nil {
+			note.FolderID = *folderID
+		}
+
+		results = append(results, &SearchResult{
+			Note:    &note,
+			Snippet: snippet,
+			Rank:    rank,
+		})
+	}
+
+	return results, nil
 }

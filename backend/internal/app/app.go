@@ -235,3 +235,34 @@ func (a *App) ListNotes() ([]*models.Note, error) {
 	}
 	return a.noteService.ListNotes()
 }
+
+// SearchResult represents a search result for frontend
+type SearchResult struct {
+	Note    *models.Note `json:"note"`
+	Snippet string       `json:"snippet"`
+	Rank    float64      `json:"rank"`
+}
+
+// SearchNotes searches for notes using full-text search
+func (a *App) SearchNotes(query string) ([]*SearchResult, error) {
+	if a.noteService == nil {
+		return nil, fmt.Errorf("note service not initialized")
+	}
+
+	results, err := a.noteService.SearchNotes(query)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to app-level SearchResult
+	appResults := make([]*SearchResult, len(results))
+	for i, r := range results {
+		appResults[i] = &SearchResult{
+			Note:    r.Note,
+			Snippet: r.Snippet,
+			Rank:    r.Rank,
+		}
+	}
+
+	return appResults, nil
+}
