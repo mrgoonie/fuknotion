@@ -23,9 +23,16 @@ export function useAutoSave({ debounceMs = 2000, onSave }: UseAutoSaveOptions): 
 
   const timeoutRef = useRef<NodeJS.Timeout>();
   const pendingContentRef = useRef<string>();
+  const savingRef = useRef(false);
+
+  // Keep savingRef in sync with isSaving state
+  useEffect(() => {
+    savingRef.current = isSaving;
+  }, [isSaving]);
 
   const performSave = useCallback(async (content: string) => {
     try {
+      savingRef.current = true;
       setIsSaving(true);
       setError(null);
       await onSave(content);
@@ -34,6 +41,7 @@ export function useAutoSave({ debounceMs = 2000, onSave }: UseAutoSaveOptions): 
       setError(err instanceof Error ? err : new Error('Save failed'));
       console.error('Auto-save failed:', err);
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
       pendingContentRef.current = undefined;
     }
@@ -62,12 +70,13 @@ export function useAutoSave({ debounceMs = 2000, onSave }: UseAutoSaveOptions): 
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      // Save any pending content before unmount
-      if (pendingContentRef.current !== undefined && !isSaving) {
-        performSave(pendingContentRef.current);
+      // Save any pending content before unmount if not currently saving
+      // Use ref to avoid race condition with state
+      if (pendingContentRef.current !== undefined && !savingRef.current) {
+        void performSave(pendingContentRef.current);
       }
     };
-  }, [performSave, isSaving]);
+  }, [performSave]);
 
   return { save, isSaving, lastSaved, error };
 }

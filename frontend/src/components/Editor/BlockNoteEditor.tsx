@@ -90,7 +90,7 @@ export function BlockNoteEditor({ noteId, initialContent, onSave, readOnly = fal
   return (
     <div className="h-full overflow-auto">
       <BlockNoteView
-        editor={editor as any}
+        editor={editor}
         editable={!readOnly}
         theme="light"
       />
