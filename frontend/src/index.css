@@ -66,3 +66,95 @@ body {
   width: 100%;
   height: 100vh;
 }
+
+/* BlockNote Editor Dark Theme Overrides */
+.blocknote-editor-container .bn-container {
+  background-color: var(--color-bg-secondary) !important;
+}
+
+.blocknote-editor-container .bn-editor {
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Editor text content */
+.blocknote-editor-container .bn-block-content,
+.blocknote-editor-container .ProseMirror {
+  color: var(--color-text-primary) !important;
+}
+
+/* Placeholder text */
+.blocknote-editor-container .bn-block-content .is-empty::before,
+.blocknote-editor-container .ProseMirror .is-empty::before {
+  color: var(--color-text-tertiary) !important;
+}
+
+/* Block handles and side menu */
+.blocknote-editor-container .bn-block-outer[data-node-type] .bn-block-group,
+.blocknote-editor-container .bn-side-menu {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Slash menu (suggestion menu) */
+.blocknote-editor-container .bn-suggestion-menu,
+.blocknote-editor-container .mantine-Menu-dropdown {
+  background-color: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Slash menu items */
+.blocknote-editor-container .bn-suggestion-menu .bn-suggestion-menu-item,
+.blocknote-editor-container .mantine-Menu-item {
+  color: var(--color-text-primary) !important;
+  background-color: transparent !important;
+}
+
+/* Slash menu item hover/selected state */
+.blocknote-editor-container .bn-suggestion-menu .bn-suggestion-menu-item[data-selected="true"],
+.blocknote-editor-container .bn-suggestion-menu .bn-suggestion-menu-item:hover,
+.blocknote-editor-container .mantine-Menu-item[data-hovered="true"],
+.blocknote-editor-container .mantine-Menu-item:hover {
+  background-color: var(--color-bg-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Slash menu icons */
+.blocknote-editor-container .bn-suggestion-menu .bn-suggestion-menu-item .bn-suggestion-menu-item-icon,
+.blocknote-editor-container .mantine-Menu-item svg {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Slash menu label and description */
+.blocknote-editor-container .bn-suggestion-menu-label {
+  color: var(--color-text-primary) !important;
+}
+
+.blocknote-editor-container .bn-suggestion-menu-item-description {
+  color: var(--color-text-tertiary) !important;
+}
+
+/* Toolbar */
+.blocknote-editor-container .bn-toolbar,
+.blocknote-editor-container .bn-formatting-toolbar {
+  background-color: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Toolbar buttons */
+.blocknote-editor-container .bn-button,
+.blocknote-editor-container .mantine-Button-root {
+  color: var(--color-text-primary) !important;
+  background-color: transparent !important;
+}
+
+.blocknote-editor-container .bn-button:hover,
+.blocknote-editor-container .mantine-Button-root:hover {
+  background-color: var(--color-bg-hover) !important;
+}
+
+/* Selection */
+.blocknote-editor-container .ProseMirror ::selection {
+  background-color: var(--color-accent) !important;
+  color: white !important;
+}

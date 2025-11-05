@@ -6,20 +6,27 @@ import (
 	"os"
 	"path/filepath"
 
+	"fuknotion/backend/internal/auth"
 	"fuknotion/backend/internal/config"
 	"fuknotion/backend/internal/database"
 	"fuknotion/backend/internal/filesystem"
 	"fuknotion/backend/internal/models"
 	"fuknotion/backend/internal/note"
+
+	"golang.org/x/oauth2"
 )
 
 // App struct
 type App struct {
-	ctx         context.Context
-	fs          *filesystem.FileSystem
-	config      *config.Config
-	db          *database.Database
-	noteService *note.Service
+	ctx            context.Context
+	fs             *filesystem.FileSystem
+	config         *config.Config
+	db             *database.Database
+	userDB         *database.Database
+	noteService    *note.Service
+	oauthService   *auth.OAuthService
+	storage        *auth.SecureStorage
+	sessionManager *auth.SessionManager
 }
 
 // NewApp creates a new App application struct
@@ -47,6 +54,14 @@ func (a *App) Startup(ctx context.Context) {
 	}
 	a.fs = fs
 
+	// Initialize user database
+	userDB, err := database.InitUserDB(appDataPath)
+	if err != nil {
+		fmt.Printf("Failed to initialize user database: %v\n", err)
+		return
+	}
+	a.userDB = userDB
+
 	// Initialize workspace database
 	// For now, use a default workspace path. In Phase 07, we'll add workspace management
 	workspacePath := filepath.Join(appDataPath, "workspaces", "default")
@@ -68,14 +83,56 @@ func (a *App) Startup(ctx context.Context) {
 		cfg = config.DefaultConfig()
 	}
 	a.config = cfg
+
+	// Initialize auth services
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+
+	fmt.Printf("Loading OAuth credentials...\n")
+	fmt.Printf("GOOGLE_CLIENT_ID present: %v\n", clientID != "")
+	fmt.Printf("GOOGLE_CLIENT_SECRET present: %v\n", clientSecret != "")
+
+	if clientID != "" && clientSecret != "" {
+		a.oauthService = auth.NewOAuthService(clientID, clientSecret)
+
+		storage, err := auth.NewSecureStorage("fuknotion")
+		if err != nil {
+			fmt.Printf("Failed to initialize secure storage: %v\n", err)
+		} else {
+			a.storage = storage
+			a.sessionManager = auth.NewSessionManager(ctx, a.oauthService, storage)
+
+			// Try to restore previous session
+			err = a.sessionManager.RestoreSession(func(token *oauth2.Token) error {
+				fmt.Println("Token refreshed automatically")
+				return nil
+			})
+			if err == nil {
+				fmt.Println("Previous session restored successfully")
+			}
+		}
+	} else {
+		fmt.Println("Warning: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not set. Authentication will not be available.")
+	}
 }
 
 // Shutdown is called at application termination
 func (a *App) Shutdown(ctx context.Context) {
-	// Close database
+	// Stop session manager
+	if a.sessionManager != nil {
+		a.sessionManager.Stop()
+	}
+
+	// Close databases
 	if a.db != nil {
 		if err := a.db.Close(); err != nil {
-			fmt.Printf("Failed to close database: %v\n", err)
+			fmt.Printf("Failed to close workspace database: %v\n", err)
+		}
+	}
+
+	if a.userDB != nil {
+		if err := a.userDB.Close(); err != nil {
+			fmt.Printf("Failed to close user database: %v\n", err)
 		}
 	}
 

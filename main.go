@@ -4,18 +4,26 @@ import (
 	"embed"
 	"log"
 
-	"fuknotion/backend/internal/app"
+	"fuknotion/backend/app"
 
+	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-// Note: Wails will handle asset embedding during build
-// For now, we'll use a simple initialization
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
+	// Load .env file if it exists
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Printf("Warning: .env file not found or could not be loaded: %v", envErr)
+	} else {
+		log.Println(".env file loaded successfully")
+	}
+
 	// Create an instance of the app structure
 	myApp := app.NewApp()
 

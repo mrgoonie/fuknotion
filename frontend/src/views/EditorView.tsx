@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { BlockNoteEditor } from '../components/Editor/BlockNoteEditor';
+import { EditableTitle } from '../components/Editor/EditableTitle';
 import { updateNote } from '../services/noteService';
 import { extractFrontmatter, addFrontmatter } from '../utils/blockNoteMarkdown';
 
@@ -33,15 +34,37 @@ export function EditorView() {
     }
   }, [currentNote, setNote]);
 
+  const handleTitleSave = useCallback(async (newTitle: string) => {
+    if (!currentNote) return;
+
+    try {
+      // Update note with new title
+      await updateNote(currentNote.id, newTitle, currentNote.content);
+
+      // Update local state
+      setNote({
+        ...currentNote,
+        title: newTitle,
+        updatedAt: new Date().toISOString(),
+      });
+
+      console.log('Title saved successfully');
+    } catch (error) {
+      console.error('Failed to save title:', error);
+      throw error; // Re-throw to let EditableTitle handle it
+    }
+  }, [currentNote, setNote]);
+
   return (
     <div className="h-full flex flex-col">
       {currentNote ? (
         <div className="h-full flex flex-col">
           {/* Note header */}
-          <div className="border-b px-8 py-4">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              {currentNote.title}
-            </h1>
+          <div className="border-b border-border px-8 py-6">
+            <EditableTitle
+              title={currentNote.title}
+              onSave={handleTitleSave}
+            />
           </div>
 
           {/* Editor */}
@@ -54,7 +77,7 @@ export function EditorView() {
           </div>
         </div>
       ) : (
-        <div className="h-full flex items-center justify-center text-gray-500">
+        <div className="h-full flex items-center justify-center text-text-secondary">
           <div className="text-center">
             <p className="text-xl mb-2">No note selected</p>
             <p className="text-sm">

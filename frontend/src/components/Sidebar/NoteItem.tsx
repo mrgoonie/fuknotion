@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/appStore';
 import type { Note } from '../../types';
 
@@ -7,11 +8,13 @@ interface NoteItemProps {
 }
 
 export function NoteItem({ note, isActive }: NoteItemProps) {
+  const navigate = useNavigate();
   const { setNote, currentNote } = useAppStore();
   const active = isActive ?? (currentNote?.id === note.id);
 
   const handleClick = () => {
     setNote(note);
+    navigate('/');
   };
 
   return (

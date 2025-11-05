@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // Database wraps SQLite connection
@@ -16,7 +17,13 @@ type Database struct {
 
 // Open opens or creates a SQLite database
 func Open(dbPath string) (*Database, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+	// Ensure parent directory exists
+	dir := filepath.Dir(dbPath)
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return nil, fmt.Errorf("failed to create database directory: %w", err)
+	}
+
+	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}

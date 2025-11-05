@@ -9,18 +9,23 @@ interface AppState {
   // Open tabs
   openTabs: Note[];
 
+  // All notes list
+  allNotes: Note[];
+
   // Actions
   setWorkspace: (workspace: Workspace | null) => void;
   setNote: (note: Note | null) => void;
   addOpenTab: (note: Note) => void;
   removeOpenTab: (noteId: string) => void;
   clearOpenTabs: () => void;
+  setAllNotes: (notes: Note[]) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   currentWorkspace: null,
   currentNote: null,
   openTabs: [],
+  allNotes: [],
 
   setWorkspace: (workspace) => set({ currentWorkspace: workspace }),
 
@@ -41,4 +46,6 @@ export const useAppStore = create<AppState>((set) => ({
     })),
 
   clearOpenTabs: () => set({ openTabs: [] }),
+
+  setAllNotes: (notes) => set({ allNotes: notes }),
 }));

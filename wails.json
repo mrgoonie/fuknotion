@@ -19,5 +19,5 @@
   },
   "wailsjsdir": "./frontend",
   "frontenddir": "./frontend",
-  "main": "./backend/cmd/fuknotion"
+  "main": "."
 }
