@@ -8,7 +8,7 @@ interface FoldersTreeProps {
 
 export function FoldersTree({ searchQuery }: FoldersTreeProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['root']));
-  const { openNotes } = useAppStore();
+  const { openTabs } = useAppStore();
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => {
@@ -23,7 +23,7 @@ export function FoldersTree({ searchQuery }: FoldersTreeProps) {
   };
 
   // Filter notes based on search query (excluding favorites)
-  const notes = openNotes.filter(note =>
+  const notes = openTabs.filter(note =>
     !note.isFavorite &&
     (!searchQuery || note.title.toLowerCase().includes(searchQuery.toLowerCase()))
   );

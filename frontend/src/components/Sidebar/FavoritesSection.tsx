@@ -8,10 +8,10 @@ interface FavoritesSectionProps {
 
 export function FavoritesSection({ searchQuery }: FavoritesSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { openNotes } = useAppStore();
+  const { openTabs } = useAppStore();
 
   // Filter favorites based on search query
-  const favorites = openNotes.filter(note =>
+  const favorites = openTabs.filter(note =>
     note.isFavorite &&
     (!searchQuery || note.title.toLowerCase().includes(searchQuery.toLowerCase()))
   );

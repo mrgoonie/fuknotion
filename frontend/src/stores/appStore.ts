@@ -6,39 +6,39 @@ interface AppState {
   currentWorkspace: Workspace | null;
   currentNote: Note | null;
 
-  // Open notes (for tabs)
-  openNotes: Note[];
+  // Open tabs
+  openTabs: Note[];
 
   // Actions
   setWorkspace: (workspace: Workspace | null) => void;
   setNote: (note: Note | null) => void;
-  addOpenNote: (note: Note) => void;
-  removeOpenNote: (noteId: string) => void;
-  clearOpenNotes: () => void;
+  addOpenTab: (note: Note) => void;
+  removeOpenTab: (noteId: string) => void;
+  clearOpenTabs: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   currentWorkspace: null,
   currentNote: null,
-  openNotes: [],
+  openTabs: [],
 
   setWorkspace: (workspace) => set({ currentWorkspace: workspace }),
 
   setNote: (note) => set({ currentNote: note }),
 
-  addOpenNote: (note) =>
+  addOpenTab: (note) =>
     set((state) => {
       // Don't add if already open
-      if (state.openNotes.find((n) => n.id === note.id)) {
+      if (state.openTabs.find((n) => n.id === note.id)) {
         return state;
       }
-      return { openNotes: [...state.openNotes, note] };
+      return { openTabs: [...state.openTabs, note] };
     }),
 
-  removeOpenNote: (noteId) =>
+  removeOpenTab: (noteId) =>
     set((state) => ({
-      openNotes: state.openNotes.filter((n) => n.id !== noteId),
+      openTabs: state.openTabs.filter((n) => n.id !== noteId),
     })),
 
-  clearOpenNotes: () => set({ openNotes: [] }),
+  clearOpenTabs: () => set({ openTabs: [] }),
 }));
