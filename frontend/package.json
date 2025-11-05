@@ -10,10 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "@blocknote/core": "^0.12.0",
     "@blocknote/react": "^0.12.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.9.5",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
