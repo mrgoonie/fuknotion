@@ -24,7 +24,7 @@ export function FavoritesSection({ searchQuery }: FavoritesSectionProps) {
     <div className="mb-2">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        className="w-full px-3 py-2 flex items-center gap-2 text-sm font-medium text-text-secondary hover:bg-bg-hover"
       >
         <svg
           className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -38,13 +38,13 @@ export function FavoritesSection({ searchQuery }: FavoritesSectionProps) {
           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
         </svg>
         <span>Favorites</span>
-        <span className="ml-auto text-gray-500">{favorites.length}</span>
+        <span className="ml-auto text-text-tertiary">{favorites.length}</span>
       </button>
 
       {isExpanded && (
         <div className="ml-6">
           {favorites.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm text-text-tertiary">
               No favorites found
             </div>
           ) : (

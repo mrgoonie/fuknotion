@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme CSS Variables */
+:root {
+  /* Light theme (default) */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-active: #e5e7eb;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  --color-overlay: rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] {
+  /* Dark theme */
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #262626;
+  --color-bg-tertiary: #333333;
+  --color-bg-hover: #2d2d2d;
+  --color-bg-active: #404040;
+
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border: #404040;
+  --color-border-light: #333333;
+
+  --color-accent: #60a5fa;
+  --color-accent-hover: #3b82f6;
+
+  --color-overlay: rgba(0, 0, 0, 0.7);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -14,6 +57,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {

@@ -37,7 +37,7 @@ export function FoldersTree({ searchQuery }: FoldersTreeProps) {
     <div className="mb-2">
       <button
         onClick={() => toggleFolder('root')}
-        className="w-full px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        className="w-full px-3 py-2 flex items-center gap-2 text-sm font-medium text-text-secondary hover:bg-bg-hover"
       >
         <svg
           className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -51,13 +51,13 @@ export function FoldersTree({ searchQuery }: FoldersTreeProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
         </svg>
         <span>All Notes</span>
-        <span className="ml-auto text-gray-500">{rootNotes.length}</span>
+        <span className="ml-auto text-text-tertiary">{rootNotes.length}</span>
       </button>
 
       {isExpanded && (
         <div className="ml-6">
           {rootNotes.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm text-text-tertiary">
               {searchQuery ? 'No notes found' : 'No notes yet'}
             </div>
           ) : (

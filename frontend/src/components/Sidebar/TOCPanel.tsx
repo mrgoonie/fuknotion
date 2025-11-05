@@ -44,15 +44,15 @@ export function TOCPanel({ content }: TOCPanelProps) {
   if (headings.length === 0) {
     return (
       <div className="p-4">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">Table of Contents</h4>
-        <div className="text-sm text-gray-500">No headings found</div>
+        <h4 className="text-xs font-semibold text-text-tertiary uppercase mb-3">Table of Contents</h4>
+        <div className="text-sm text-text-tertiary">No headings found</div>
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">Table of Contents</h4>
+      <h4 className="text-xs font-semibold text-text-tertiary uppercase mb-3">Table of Contents</h4>
 
       <div className="space-y-1">
         {headings.map((heading) => (
@@ -60,8 +60,8 @@ export function TOCPanel({ content }: TOCPanelProps) {
             key={heading.id}
             onClick={() => handleHeadingClick(heading.id)}
             className={`
-              w-full text-left text-sm px-2 py-1.5 rounded hover:bg-gray-100 transition-colors
-              ${activeId === heading.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}
+              w-full text-left text-sm px-2 py-1.5 rounded hover:bg-bg-hover transition-colors
+              ${activeId === heading.id ? 'bg-bg-active text-accent font-medium' : 'text-text-secondary'}
             `}
             style={{
               paddingLeft: `${(heading.level - 1) * 12 + 8}px`,

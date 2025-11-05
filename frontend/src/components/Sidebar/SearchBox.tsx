@@ -7,7 +7,7 @@ export function SearchBox({ value, onChange }: SearchBoxProps) {
   return (
     <div className="relative">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -16,14 +16,14 @@ export function SearchBox({ value, onChange }: SearchBoxProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Filter notes..."
-        className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        className="w-full pl-10 pr-3 py-2 border border-border bg-bg-primary text-text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-sm"
       />
       {value && (
         <button
           onClick={() => onChange('')}
           className="absolute inset-y-0 right-0 pr-3 flex items-center"
         >
-          <svg className="w-4 h-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-text-tertiary hover:text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>

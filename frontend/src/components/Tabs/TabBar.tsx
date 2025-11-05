@@ -46,14 +46,14 @@ export function TabBar() {
 
   if (openTabs.length === 0) {
     return (
-      <div className="h-10 border-b bg-gray-50 flex items-center px-4 text-sm text-gray-500">
+      <div className="h-10 border-b border-border bg-bg-secondary flex items-center px-4 text-sm text-text-tertiary">
         No tabs open
       </div>
     );
   }
 
   return (
-    <div className="h-10 border-b bg-gray-50 flex items-center overflow-x-auto">
+    <div className="h-10 border-b border-border bg-bg-secondary flex items-center overflow-x-auto">
       <div className="flex">
         {openTabs.map((note) => (
           <Tab

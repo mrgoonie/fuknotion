@@ -17,8 +17,8 @@ export function NoteItem({ note, isActive }: NoteItemProps) {
   return (
     <button
       onClick={handleClick}
-      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 rounded hover:bg-gray-100 ${
-        active ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 rounded hover:bg-bg-hover ${
+        active ? 'bg-bg-active text-accent' : 'text-text-secondary'
       }`}
     >
       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

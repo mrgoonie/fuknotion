@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Router } from './router';
 import { SearchSpotlight } from './components/Search/SearchSpotlight';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -19,10 +20,10 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ThemeProvider>
       <Router />
       <SearchSpotlight isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    </>
+    </ThemeProvider>
   );
 }
 
